@@ -1,5 +1,7 @@
 # Light weight JSON parser
 
+Light weight json parser that is written on pure c language.
+
 ---
 
 ## Purpose
