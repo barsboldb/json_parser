@@ -1,0 +1,38 @@
+#!/bin/zsh
+#
+set -e # exit if any commands returns a non-zero exit code.
+
+# check if dist folder exists and remove it, then create it again
+echo -e "\033[33mcleaning dist folder...\033[m"
+if test -d "./dist"; then
+  rm -rf ./dist
+fi
+mkdir ./dist
+echo -e "\033[32mcleaning dist folder... done!\033[m"
+
+
+# compile main.c and put it in dist folder
+echo -e "\033[33mbuilding...\033[m"
+gcc ./src/main.c -o ./dist/main
+echo -e "\033[32mbuilding... done!\033[m"
+
+while getopts "e" flag; do
+  case $flag in
+    e) # Handle the -e flag
+      echo -e "\033[33mexecuting...\033[m"
+      ./dist/main
+      EXITCODE=$?
+      if [[ $EXITCODE == 0 ]]
+      then
+        echo -e "\033[32mexecuting... done with exit code: $EXITCODE\033[m"
+      else
+        echo -e "\033[31mexecuting... failed with exit code: $EXITCODE\033[m"
+      fi
+   ;;
+   \?)
+   # Handle invalid options
+    echo "invalid options"
+   ;;
+  esac
+done
+
