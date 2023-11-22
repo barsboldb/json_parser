@@ -2,6 +2,13 @@
 #include <stdlib.h>
 
 char* read_file(const char* path) {
+  /**
+   * It's very important that the returned string should be freed.
+   * Unless it cause memory leak. Because the
+   * `char* read_file(const char* path)` function uses memory
+   * allocation / `void *malloc(size_t __size)` /.
+   */
+
   // Open file with read permition
   FILE* json_file = fopen(path, "r");
 
