@@ -19,3 +19,5 @@ Usage of the build script is easy. To build this library you should run the foll
 ```
 and it will create dist folder to store single main binary file. And you can add `-e` flag to execute the binary file immedietly after building.
 * `sync`
+
+*** You can give me an advice or recommendation to improve this library. ***
