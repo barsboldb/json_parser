@@ -13,7 +13,7 @@ echo -e "\033[32mcleaning dist folder... done!\033[m"
 
 # compile main.c and put it in dist folder
 echo -e "\033[33mbuilding...\033[m"
-gcc ./src/main.c -o ./dist/main
+gcc ./src/*.c -Iinclude -o ./dist/main
 echo -e "\033[32mbuilding... done!\033[m"
 
 while getopts "e" flag; do
