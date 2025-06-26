@@ -1,17 +1,26 @@
 #include "../include/lexer.h"
 
 lexer_t lexer_init(const char *input) {
-  lexer_t lexer;
   size_t len = strlen(input);
   char *in_str = malloc(len + 1);
   strcpy(in_str, input);
-  lexer.start = in_str;
-  lexer.current = in_str;
-  lexer.line = 1;
-  lexer.column = 1;
-  lexer.has_peeked = false;
-  lexer.last_token.lexeme = NULL;
+  lexer_t lexer = {
+    .start = in_str,
+    .current = in_str,
+    .line = 1,
+    .column = 1,
+    .has_peeked = false,
+    .last_token = {
+      .lexeme = NULL,
+    },
+  };
   return lexer;
+}
+
+void lexer_free(lexer_t *lexer) {
+  if (lexer->start) {
+    free((char *)lexer->start);
+  }
 }
 
 // Helper function to check if character is a digit
@@ -184,7 +193,7 @@ token_t tokenize_string(lexer_t *lexer) {
   return token;
 }
 
-void free_token(token_t *token) {
+void token_free(token_t *token) {
   if (token->lexeme) {
     free(token->lexeme);
     token->lexeme = NULL;
@@ -293,7 +302,7 @@ token_t next_token(lexer_t *lexer) {
     return lexer->last_token;
   }
 
-  free_token(&lexer->last_token);
+  token_free(&lexer->last_token);
 
   token_t token = tokenize(lexer);
   lexer->last_token = token;

@@ -42,8 +42,9 @@ void skip_whitespace(lexer_t *);
 
 
 lexer_t lexer_init(const char *);
+void lexer_free(lexer_t *);
 
-void free_token(token_t *);
+void token_free(token_t *);
 
 /* token_t tokenize_string(lexer_t *); */
 /* token_t tokenize_number(lexer_t *); */
