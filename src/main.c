@@ -11,5 +11,6 @@ int main(void) {
     print_token(&token);
   }
 
+  lexer_free(&lexer);
   return 0;
 }
