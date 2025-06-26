@@ -295,7 +295,6 @@ token_t tokenize(lexer_t *lexer) {
   return token;
 }
 
-// 
 token_t next_token(lexer_t *lexer) {
   if (lexer->has_peeked) {
     lexer->has_peeked = false;

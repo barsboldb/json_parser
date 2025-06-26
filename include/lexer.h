@@ -17,10 +17,10 @@ typedef enum {
   TOKEN_NULL,     //
   TOKEN_EOF,
   TOKEN_ERROR,
-} token_type;
+} token_type_t;
 
 typedef struct {
-  token_type type;
+  token_type_t type;
   int line, column;
   char *lexeme;
 } token_t;
