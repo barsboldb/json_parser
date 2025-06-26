@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 /**
  * In JSON, values must be one of the following data types:
  * - a string
@@ -18,11 +20,11 @@ typedef enum {
   JSON_OBJECT,
 } json_type;
 
-typedef struct json_value json_value;
+typedef struct json_value json_value_t;
 
 typedef struct {
   char *key;
-  json_value *value;
+  json_value_t *value;
 } json_object_entry;
 
 struct json_value {
@@ -30,9 +32,9 @@ struct json_value {
   union {
     double number;
     char *string;
-    int boolean;
+    bool boolean;
     struct {
-      json_value **items;
+      json_value_t **items;
       size_t length;
     } array;
     struct {
@@ -41,3 +43,15 @@ struct json_value {
     } object;
   };
 };
+
+// Create new json_value_t
+json_value_t *json_value_init(json_type);
+
+// Free json_value_t and all nested content
+void json_value_free(json_value_t *);
+
+// Create json_value_t
+json_value_t *json_value_bool(bool);
+json_value_t *json_value_number(double);
+json_value_t *json_value_string(char *);
+json_value_t *json_value_array(size_t);
