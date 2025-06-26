@@ -182,7 +182,7 @@ token_t tokenize_string(lexer_t *lexer) {
   return token;
 }
 
-void token_free(token_t *token) {
+void free_token(token_t *token) {
   free(token->lexeme);
 }
 

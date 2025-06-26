@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef enum {
   TOKEN_LBRACE,   //
@@ -29,6 +30,9 @@ typedef struct {
   const char *current;
   int line;
   int column;
+
+  token_t last_token;
+  bool has_peeked;
 } lexer_t;
 
 // util functions
@@ -39,7 +43,7 @@ void skip_whitespace(lexer_t *);
 
 lexer_t lexer_init(const char *);
 
-void token_free(token_t *);
+void free_token(token_t *);
 
 token_t tokenize_string(lexer_t *);
 token_t tokenize_number(lexer_t *);
