@@ -9,6 +9,8 @@ lexer_t lexer_init(const char *input) {
   lexer.current = in_str;
   lexer.line = 1;
   lexer.column = 1;
+  lexer.has_peeked = false;
+  lexer.last_token.lexeme = NULL;
   return lexer;
 }
 
@@ -183,12 +185,13 @@ token_t tokenize_string(lexer_t *lexer) {
 }
 
 void free_token(token_t *token) {
-  free(token->lexeme);
+  if (token->lexeme) {
+    free(token->lexeme);
+    token->lexeme = NULL;
+  }
 }
 
-// 
-
-token_t next_token(lexer_t *lexer) {
+token_t tokenize(lexer_t *lexer) {
   skip_whitespace(lexer);
 
   token_t token;
@@ -281,6 +284,28 @@ token_t next_token(lexer_t *lexer) {
   }
 
   return token;
+}
+
+// 
+token_t next_token(lexer_t *lexer) {
+  if (lexer->has_peeked) {
+    lexer->has_peeked = false;
+    return lexer->last_token;
+  }
+
+  free_token(&lexer->last_token);
+
+  token_t token = tokenize(lexer);
+  lexer->last_token = token;
+  return token;
+}
+
+token_t peek_token(lexer_t *lexer) {
+  if (!lexer->has_peeked) {
+    lexer->last_token = next_token(lexer);
+    lexer->has_peeked = true;
+  }
+  return lexer->last_token;
 }
 
 void print_token(token_t *token) {

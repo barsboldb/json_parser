@@ -9,7 +9,6 @@ int main(void) {
   token_t token;
   while ((token = next_token(&lexer)).type != TOKEN_EOF) {
     print_token(&token);
-    free_token(&token);
   }
 
   return 0;
