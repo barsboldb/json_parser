@@ -1,6 +1,6 @@
 #include "../include/json.h"
 
-json_value_t *json_value_init(json_type type) {
+json_value_t *json_value_init(json_type_t type) {
   json_value_t *val = malloc(sizeof(json_value_t));
   val->type = type;
   return val;

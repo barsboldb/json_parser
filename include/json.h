@@ -18,7 +18,7 @@ typedef enum {
   JSON_STRING,
   JSON_ARRAY,
   JSON_OBJECT,
-} json_type;
+} json_type_t;
 
 typedef struct json_value json_value_t;
 
@@ -28,7 +28,7 @@ typedef struct {
 } json_object_entry;
 
 struct json_value {
-  json_type type;
+  json_type_t type;
   union {
     double number;
     char *string;
@@ -45,7 +45,7 @@ struct json_value {
 };
 
 // Create new json_value_t
-json_value_t *json_value_init(json_type);
+json_value_t *json_value_init(json_type_t);
 
 // Free json_value_t and all nested content
 void json_value_free(json_value_t *);
