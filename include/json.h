@@ -11,6 +11,8 @@
  * - null
 */
 
+#define INIT_SIZE 4
+
 typedef enum {
   JSON_NULL,
   JSON_BOOL,
@@ -35,11 +37,13 @@ struct json_value {
     bool boolean;
     struct {
       json_value_t **items;
-      size_t length;
+      size_t len;
+      size_t cap;
     } array;
     struct {
       json_object_entry *entries;
-      size_t length;
+      size_t len;
+      size_t cap;
     } object;
   };
 };
@@ -55,3 +59,7 @@ json_value_t *json_value_bool(bool);
 json_value_t *json_value_number(double);
 json_value_t *json_value_string(char *);
 json_value_t *json_value_array(size_t);
+
+// Handle json_value_array push and pop
+void json_array_push(json_value_t *, json_value_t *);
+json_value_t *json_array_pop(json_value_t *);
