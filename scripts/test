@@ -1,0 +1,68 @@
+#!/bin/zsh
+#
+set -e # exit if any commands returns a non-zero exit code.
+
+# Colors for output
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_status() {
+    local color=$1
+    local message=$2
+    echo -e "${color}${message}${NC}"
+}
+
+# Check if test directory exists, create it if not
+echo -e "${YELLOW}preparing test environment...${NC}"
+if [ ! -d "./tests" ]; then
+    mkdir ./tests
+fi
+
+# Check if dist folder exists and create it
+if [ ! -d "./dist" ]; then
+    mkdir ./dist
+fi
+print_status $GREEN "preparing test environment... done!"
+
+# Compile the test suite
+echo -e "${YELLOW}compiling test suite...${NC}"
+gcc ./tests/test_json_array.c ./src/json.c -Iinclude -o ./dist/test_json_array
+
+if [ $? -eq 0 ]; then
+    print_status $GREEN "compiling test suite... done!"
+else
+    print_status $RED "compiling test suite... failed!"
+    exit 1
+fi
+
+# Run the tests
+echo -e "${YELLOW}running tests...${NC}"
+./dist/test_json_array
+
+EXITCODE=$?
+if [ $EXITCODE -eq 0 ]; then
+    print_status $GREEN "running tests... done! All tests passed!"
+else
+    print_status $RED "running tests... failed! Some tests did not pass!"
+    exit 1
+fi
+
+# Optional: Clean up test binaries
+while getopts "c" flag; do
+    case $flag in
+        c) # Handle the -c flag for cleanup
+            echo -e "${YELLOW}cleaning up test binaries...${NC}"
+            rm -f ./dist/test_json_array
+            print_status $GREEN "cleaning up test binaries... done!"
+            ;;
+        \?)
+            # Handle invalid options
+            echo "Invalid option. Use -c to clean up test binaries after running."
+            ;;
+    esac
+done
+
+echo -e "${GREEN}🎉 Test suite completed successfully!${NC}"
