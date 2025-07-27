@@ -1,1 +1,4 @@
 dist/
+
+# MacOS specific
+.DS_store
