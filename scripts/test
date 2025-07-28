@@ -10,59 +10,211 @@ NC='\033[0m' # No Color
 
 # Function to print colored output
 print_status() {
-    local color=$1
-    local message=$2
-    echo -e "${color}${message}${NC}"
+  local color=$1
+  local message=$2
+  echo -e "${color}${message}${NC}"
 }
 
-# Check if test directory exists, create it if not
-echo -e "${YELLOW}preparing test environment...${NC}"
-if [ ! -d "./tests" ]; then
-    mkdir ./tests
-fi
+print_usage() {
+  echo "Usage: $0 [options] [test_name]"
+  echo ""
+  echo "Options:"
+  echo "  -c          Clean up test binaries after running"
+  echo "  -l          List available tests"
+  echo "  -h          Show this help message"
+  echo ""
+  echo "Arguments:"
+  echo "  test_name   Run specific test (without .c extension)"
+  echo "              If not provided, all tests will be run"
+  echo ""
+  echo "Examples:"
+  echo "  $0                    # Run all tests"
+  echo "  $0 test_json_array    # Run only test_json_array"
+  echo "  $0 -c                 # Run all tests and clean up binaries"
+  echo "  $0 -c test_json_array # Run specific test and clean up"
+}
 
-# Check if dist folder exists and create it
-if [ ! -d "./dist" ]; then
-    mkdir ./dist
-fi
-print_status $GREEN "preparing test environment... done!"
+list_tests() {
+  echo "Available tests:"
+  if [ -d "./tests" ]; then
+    for test_file in ./tests/test_*.c; do
+      if [ -f "$test_file" ]; then
+        basename "$test_file" .c
+      fi
+    done
+  else
+    echo "No tests directory found."
+  fi
+}
 
-# Compile the test suite
-echo -e "${YELLOW}compiling test suite...${NC}"
-gcc ./tests/test_json_array.c ./src/json.c -Iinclude -o ./dist/test_json_array
+compile_tests() {
+  local test_name=$1
+  local test_file="./tests/${test_name}.c"
+  local output_file="./dist/${test_name}"
 
-if [ $? -eq 0 ]; then
-    print_status $GREEN "compiling test suite... done!"
-else
-    print_status $RED "compiling test suite... failed!"
-    exit 1
-fi
+  if [ ! -f "$test_file" ]; then
+    print_status $RED "Test file $test_file not found!"
+    return 1
+  fi
 
-# Run the tests
-echo -e "${YELLOW}running tests...${NC}"
-./dist/test_json_array
+  echo -e "${YELLOW}compiling ${test_name}...${NC}"
+  gcc "$test_file" ./src/*.c -Iinclude -Itests -o "$output_file"
 
-EXITCODE=$?
-if [ $EXITCODE -eq 0 ]; then
-    print_status $GREEN "running tests... done! All tests passed!"
-else
-    print_status $RED "running tests... failed! Some tests did not pass!"
-    exit 1
-fi
+  if [ $? -eq 0 ]; then
+    print_status $GREEN "compiling ${test_name}... done!"
+    return 0
+  else
+    print_status $RED "compiling ${test_name}... failed!"
+    return 1
+  fi
+}
 
-# Optional: Clean up test binaries
-while getopts "c" flag; do
-    case $flag in
-        c) # Handle the -c flag for cleanup
-            echo -e "${YELLOW}cleaning up test binaries...${NC}"
-            rm -f ./dist/test_json_array
-            print_status $GREEN "cleaning up test binaries... done!"
-            ;;
-        \?)
-            # Handle invalid options
-            echo "Invalid option. Use -c to clean up test binaries after running."
-            ;;
-    esac
+run_test() {
+  local test_name=$1
+  local test_binary="./dist/${test_name}"
+
+  if [ ! -f "$test_binary" ]; then
+    print_status $RED "Test binary $test_binary not found!"
+    return 1
+  fi
+
+  echo -e "${YELLOW}running ${test_name}...${NC}"
+  "$test_binary"
+
+  local exit_code=$?
+  if [ $exit_code -eq 0 ]; then
+    print_status $GREEN "running ${test_name}... done!"
+    return 0
+  else
+    print_status $RED "running ${test_name}... failed!"
+    return 1
+  fi
+}
+
+cleanup_test() {
+  local test_name=$1
+  local test_binary="./dist/${test_name}"
+
+  if [ -f $test_binary ]; then
+    rm -f "$test_binary"
+  fi
+}
+
+CLEANUP=false
+SPECIFIC_TEST=""
+
+while getopts "clh" flag; do
+  case $flag in
+    c)
+      CLEANUP=true
+      ;;
+    l)
+      list_tests
+      exit 0
+      ;;
+    h)
+      print_usage
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option. Use -h for help."
+      exit 1
+      ;;
+  esac
 done
 
-echo -e "${GREEN}🎉 Test suite completed successfully!${NC}"
+shift $((OPTIND-1))
+
+if [ $# -gt 0 ]; then
+  SPECIFIC_TEST=$1
+fi
+
+echo -e "${YELLOW}preparing test environment...${NC}"
+
+if [ ! -d "./tests" ]; then
+  mkdir "./tests"
+fi
+
+if [ ! -d "./dist" ]; then
+  mkdir "./dist"
+fi
+
+if [ ! -f "./tests/test_framework.h" ]; then
+  echo "Warning: test_framework.h not found in tests directory."
+  echo "Please ensure you have the test framework header file."
+fi
+
+print_status $GREEN "preparing test environment... done!"
+
+if [ -n "$SPECIFIC_TEST" ]; then
+  TESTS_TO_RUN=("$SPECIFIC_TEST")
+else
+  TESTS_TO_RUN=()
+  for test_file in ./tests/test_*.c; do
+    if [ -f "$test_file" ]; then
+      test_name=$(basename "$test_file" .c)
+      TESTS_TO_RUN+=("$test_name")
+    fi
+  done
+fi
+
+if [ ${#TESTS_TO_RUN[@]} -eq 0 ]; then
+  print_status $RED "No tests found to run!"
+  exit 1
+fi
+
+FAILED_TESTS=()
+TOTAL_TESTS=0
+PASSED_TESTS=0
+
+for test_name in "${TESTS_TO_RUN[@]}"; do
+  echo ""
+  echo "========================================="
+  echo "Processing: $test_name"
+  echo "========================================="
+
+  if compile_tests "$test_name"; then
+    if run_test "$test_name"; then
+      PASSED_TESTS=$((PASSED_TESTS + 1))
+    else
+      FAILED_TESTS+=("$test_name")
+    fi
+
+    if [ "$CLEANUP" = true ]; then
+      cleanup_test "$test_name"
+    fi
+  else
+    FAILED_TESTS+=("$test_name")
+  fi
+
+  TOTAL_TESTS=$((TOTAL_TESTS + 1))
+done
+
+if [ "$CLEANUP" = true ]; then
+  echo -e "${YELLOW}cleaning up remaining test binaries...${NC}"
+  rm -f "./dist/test_*"
+  print_status $GREEN "cleaning up remaining test binaries... done"
+fi
+
+
+echo ""
+echo "========================================="
+echo "FINAL TEST SUMMARY"
+echo "========================================="
+echo "Total tests: $TOTAL_TESTS"
+echo "Passed tests: $PASSED_TESTS"
+echo "Failed tests: $((TOTAL_TESTS - PASSED_TESTS))"
+
+if [ ${#FAILED_TESTS[@]} -gt 0 ]; then
+  print_status $RED "Failed tests:"
+  for failed_test in "${FAILED_TESTS[@]}"; do
+      echo "  - $failed_test"
+  done
+  echo ""
+  print_status $RED "❌ Some tests failed!"
+  exit 1
+else
+  echo ""
+  print_status $GREEN "🎉 All test suites completed successfully!"
+fi
+
