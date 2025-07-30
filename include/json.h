@@ -11,7 +11,7 @@
  * - null
 */
 
-#define INIT_SIZE 4
+#define ARRAY_MIN_CAP 4
 
 typedef enum {
   JSON_NULL,
@@ -36,7 +36,7 @@ struct json_value {
     char *string;
     bool boolean;
     struct {
-      json_value_t **items;
+      json_value_t *items;
       size_t len;
       size_t cap;
     } array;
@@ -49,17 +49,23 @@ struct json_value {
 };
 
 // Create new json_value_t
-json_value_t *json_value_init(json_type_t);
+json_value_t json_value_init(json_type_t);
+
+int json_value_cmp(json_value_t *a, json_value_t *b);
 
 // Free json_value_t and all nested content
 void json_value_free(json_value_t *);
 
 // Create json_value_t
-json_value_t *json_value_bool(bool);
-json_value_t *json_value_number(double);
-json_value_t *json_value_string(char *);
-json_value_t *json_value_array(size_t);
+json_value_t json_value_bool(bool);
+json_value_t json_value_number(double);
+json_value_t json_value_string(char *);
+json_value_t json_value_array(size_t);
+
+int json_array_cmp(json_value_t *a, json_value_t *b);
+
+int json_object_cmp(json_value_t *a, json_value_t *b);
 
 // Handle json_value_array push and pop
-void json_array_push(json_value_t *, json_value_t *);
-json_value_t *json_array_pop(json_value_t *);
+void json_array_push(json_value_t, json_value_t);
+int json_array_pop(json_value_t *);
