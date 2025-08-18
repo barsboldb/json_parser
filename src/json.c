@@ -2,6 +2,7 @@
 
 
 int json_array_cmp(json_value_t *a, json_value_t *b) {
+  if (!(a && b)) return -1;
   if (a->type != JSON_ARRAY || b->type != JSON_ARRAY) return -1;
   if (a->array.len != b->array.len) return -1;
   
@@ -73,16 +74,16 @@ void json_value_free(json_value_t *val) {
   free(val);
 }
 
-void json_array_push(json_value_t arr, json_value_t val) {
-  if ((float)arr.array.len >= (float)arr.array.cap * 0.75) {
-    arr.array.cap *= 2;
-    arr.array.items = realloc(arr.array.items, arr.array.cap);
-    if (!arr.array.items) {
+void json_array_push(json_value_t *arr, json_value_t val) {
+  if ((float)arr->array.len >= (float)arr->array.cap * 0.75) {
+    arr->array.cap *= 2;
+    arr->array.items = realloc(arr->array.items, arr->array.cap * sizeof(json_value_t));
+    if (!arr->array.items) {
       return;
     }
   }
 
-  arr.array.items[arr.array.len++] = val;
+  arr->array.items[arr->array.len++] = val;
 }
 
 int json_array_pop(json_value_t *arr) {

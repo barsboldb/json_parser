@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
 /**
  * In JSON, values must be one of the following data types:
  * - a string
@@ -68,5 +69,5 @@ int json_array_cmp(json_value_t *a, json_value_t *b);
 int json_object_cmp(json_value_t *a, json_value_t *b);
 
 // Handle json_value_array push and pop
-void json_array_push(json_value_t, json_value_t);
+void json_array_push(json_value_t *, json_value_t);
 int json_array_pop(json_value_t *);

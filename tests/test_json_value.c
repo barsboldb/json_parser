@@ -248,12 +248,12 @@ void test_json_array_cmp() {
   json_value_t arr2 = json_value_array(3);
   
   json_value_t val1 = json_value_number(1);
-  json_array_push(arr1, val1);
+  json_array_push(&arr1, val1);
   
   json_value_t val2 = json_value_number(1);
   json_value_t val3 = json_value_number(2);
-  json_array_push(arr2, val2);
-  json_array_push(arr2, val3);
+  json_array_push(&arr2, val2);
+  json_array_push(&arr2, val3);
   
   TEST_ASSERT(json_array_cmp(&arr1, &arr2) == -1, "Arrays with different lengths should return -1");
 
@@ -266,14 +266,14 @@ void test_json_array_cmp() {
   json_value_t arr3 = json_value_array(2);
   json_value_t val4 = json_value_number(10);
   json_value_t val5 = json_value_string("test");
-  json_array_push(arr3, val4);
-  json_array_push(arr3, val5);
+  json_array_push(&arr3, val4);
+  json_array_push(&arr3, val5);
   
   json_value_t arr4 = json_value_array(2);
   json_value_t val6 = json_value_number(10);
   json_value_t val7 = json_value_string("test");
-  json_array_push(arr4, val6);
-  json_array_push(arr4, val7);
+  json_array_push(&arr4, val6);
+  json_array_push(&arr4, val7);
   
   TEST_ASSERT(json_array_cmp(&arr3, &arr4) == 0, "Arrays with same elements should be equal");
 
