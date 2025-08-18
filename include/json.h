@@ -61,6 +61,7 @@ json_value_t json_value_bool(bool);
 json_value_t json_value_number(double);
 json_value_t json_value_string(char *);
 json_value_t json_value_array(size_t);
+json_value_t json_value_object(size_t size);
 
 int json_array_cmp(json_value_t *a, json_value_t *b);
 
