@@ -10,6 +10,7 @@ A lightweight JSON lexer and parser implementation written in C from scratch. Th
 - **Error Reporting**: Provides line and column information for debugging
 - **Memory Safe**: Proper memory allocation and deallocation for all tokens
 - **Standards Compliant**: Follows JSON specification for parsing rules
+- **Comprehensive Testing**: Built-in test framework for reliable development
 
 ## Project Structure
 
@@ -23,13 +24,18 @@ A lightweight JSON lexer and parser implementation written in C from scratch. Th
 │   ├── lexer.c         # Lexer implementation
 │   ├── json.c          # JSON parser (to be implemented)
 │   └── parser.c        # Parser implementation (to be implemented)
+├── tests/
+│   ├── test_framework.h # Testing framework header
+│   └── test_*.c        # Individual test files
 ├── samples/
 │   ├── simple.json     # Basic JSON example
 │   ├── array.json      # Array examples
 │   └── nested.json     # Complex nested structures
-└── scripts/
-    ├── build           # Build script
-    └── sync            # Git synchronization script
+├── scripts/
+│   ├── build           # Build script
+│   ├── test            # Test runner script
+│   └── sync            # Git synchronization script
+└── dist/               # Compiled binaries (auto-generated)
 ```
 
 ## Supported JSON Types
@@ -69,21 +75,31 @@ The lexer generates the following token types:
 
 - GCC compiler
 - Zsh shell (for build scripts)
-- Make sure you have standard C libraries available
+- Standard C libraries
 
-### Build
-
-Use the provided build script:
+### Quick Start
 
 ```bash
-# Make the script executable
-chmod +x scripts/build
+# Make scripts executable
+chmod +x scripts/*
 
 # Build the project
 ./scripts/build
 
-# Build and execute
+# Build and execute main program
 ./scripts/build -e
+
+# Run all tests
+./scripts/test
+
+# Run tests with cleanup
+./scripts/test -c
+
+# Run specific test
+./scripts/test test_lexer
+
+# List available tests
+./scripts/test -l
 ```
 
 ### Manual Build
@@ -92,11 +108,12 @@ chmod +x scripts/build
 # Create dist directory
 mkdir -p dist
 
-# Compile
+# Compile main program
 gcc ./src/*.c -Iinclude -o ./dist/main
 
-# Run
-./dist/main
+# Compile and run a specific test
+gcc ./tests/test_lexer.c ./src/*.c -Iinclude -Itests -o ./dist/test_lexer
+./dist/test_lexer
 ```
 
 ## Usage
@@ -141,6 +158,57 @@ TOKEN_FALSE col: 49 lin: 1 lexeme: false
 TOKEN_RBRACE col: 54 lin: 1 lexeme: }
 ```
 
+## Testing
+
+The project includes a comprehensive testing framework:
+
+### Test Framework Features
+
+- **Colored Output**: Visual feedback for test results
+- **Individual Test Execution**: Run specific tests
+- **Test Discovery**: Automatic detection of test files
+- **Memory Cleanup**: Optional cleanup of test binaries
+- **Detailed Reporting**: Summary of passed/failed tests
+
+### Running Tests
+
+```bash
+# Run all tests
+./scripts/test
+
+# Run with cleanup
+./scripts/test -c
+
+# Run specific test
+./scripts/test test_lexer
+
+# List available tests
+./scripts/test -l
+
+# Get help
+./scripts/test -h
+```
+
+### Writing Tests
+
+Tests should be placed in the `tests/` directory with the naming convention `test_*.c`. Use the test framework header:
+
+```c
+#include "test_framework.h"
+#include "../include/lexer.h"
+
+void test_basic_tokenization() {
+    // Test implementation
+    assert_token_type(token, TOKEN_STRING);
+}
+
+int main() {
+    test_basic_tokenization();
+    printf("All tests passed!\n");
+    return 0;
+}
+```
+
 ## API Reference
 
 ### Lexer Functions
@@ -168,6 +236,34 @@ Checks if a character is whitespace.
 #### `void skip_whitespace(lexer_t *lexer)`
 Advances the lexer past whitespace characters.
 
+## Scripts Reference
+
+### Build Script (`./scripts/build`)
+
+```bash
+./scripts/build        # Build only
+./scripts/build -e     # Build and execute
+```
+
+### Test Script (`./scripts/test`)
+
+```bash
+./scripts/test                    # Run all tests
+./scripts/test -c                 # Run all tests with cleanup
+./scripts/test test_lexer         # Run specific test
+./scripts/test -c test_lexer      # Run specific test with cleanup
+./scripts/test -l                 # List available tests
+./scripts/test -h                 # Show help
+```
+
+### Sync Script (`./scripts/sync`)
+
+Synchronizes with the remote Git repository:
+
+```bash
+./scripts/sync
+```
+
 ## Error Handling
 
 The lexer provides detailed error information:
@@ -185,8 +281,18 @@ The lexer provides detailed error information:
 ## Development Status
 
 - ✅ **Lexer**: Complete with full JSON tokenization
+- ✅ **Build System**: Automated build and test scripts
+- ✅ **Testing Framework**: Comprehensive test infrastructure
 - ⏳ **Parser**: Structure defined, implementation pending
 - ⏳ **JSON Values**: Data structures ready, parsing logic needed
+
+## Development Workflow
+
+1. **Write Code**: Implement features in `src/` directory
+2. **Write Tests**: Create corresponding test files in `tests/`
+3. **Build**: Use `./scripts/build` to compile
+4. **Test**: Run `./scripts/test` to validate changes
+5. **Sync**: Use `./scripts/sync` to update from remote repository
 
 ## Future Enhancements
 
@@ -196,10 +302,14 @@ The lexer provides detailed error information:
 - Validation and schema checking
 - Performance optimizations
 - Unicode support improvements
+- Benchmarking suite
 
-## License
+## Contributing
 
-This project is open source. See the license file for details.
+1. Ensure all tests pass: `./scripts/test`
+2. Add tests for new features
+3. Follow existing code style and naming conventions
+4. Update documentation as needed
 
 ## Examples
 
@@ -208,6 +318,10 @@ Check the `samples/` directory for example JSON files:
 - `simple.json`: Basic object with mixed types
 - `array.json`: Array examples (to be added)
 - `nested.json`: Complex nested structures (to be added)
+
+## License
+
+This project is open source. See the license file for details.
 
 ---
 
