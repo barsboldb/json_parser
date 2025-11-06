@@ -13,15 +13,15 @@ typedef struct {
 parser_t parser_init(lexer_t *);
 void parser_free(parser_t *);
 
-json_value_t *parse(parser_t *);
+json_value_t parse(parser_t *);
 
-json_value_t *parse_value(parser_t *);
-json_value_t *parse_object(parser_t *);
-json_value_t *parse_array(parser_t *);
-json_value_t *parse_string(parser_t *);
-json_value_t *parse_number(parser_t *);
-json_value_t *parse_boolean(parser_t *);
-json_value_t *parse_null(parser_t *);
+json_value_t parse_value(parser_t *);
+json_value_t parse_object(parser_t *);
+json_value_t parse_array(parser_t *);
+json_value_t parse_string(parser_t *);
+json_value_t parse_number(parser_t *);
+json_value_t parse_boolean(parser_t *);
+json_value_t parse_null(parser_t *);
 
 void advance(parser_t *);
 bool match(parser_t *, token_type_t);

@@ -36,30 +36,28 @@ bool check(parser_t *parser, token_type_t type) {
   return parser->current_token.type == type;
 }
 
-json_value_t *parse_string(parser_t *parser) {
+json_value_t parse_string(parser_t *parser) {
   if (!check(parser, TOKEN_STRING)) {
     parser_error(parser, "Expected string");
-    return NULL;
   }
 
-  json_value_t *value = json_value_string(parser->current_token.lexeme);
+  json_value_t value = json_value_string(parser->current_token.lexeme);
   advance(parser);
   return value;
 }
 
-json_value_t *parse_number(parser_t *parser) {
+json_value_t parse_number(parser_t *parser) {
   if (!check(parser, TOKEN_NUMBER)) {
     parser_error(parser, "Expected number");
-    return NULL;
   }
 
   double num = strtod(parser->current_token.lexeme, NULL);
-  json_value_t *value = json_value_number(num);
+  json_value_t value = json_value_number(num);
   advance(parser);
   return value;
 }
 
-json_value_t *parse_boolean(parser_t *parser) {
+json_value_t parse_boolean(parser_t *parser) {
   bool val;
   if (check(parser, TOKEN_TRUE)) {
     val = true;
@@ -67,21 +65,23 @@ json_value_t *parse_boolean(parser_t *parser) {
     val = false;
   } else {
     parser_error(parser, "Expected boolean");
-    return NULL;
   }
 
-  json_value_t *value = json_value_bool(val);
+  json_value_t value = json_value_bool(val);
   advance(parser);
   return value;
 }
 
-json_value_t *parse_null(parser_t *parser) {
+json_value_t parse_null(parser_t *parser) {
   if (!check(parser, TOKEN_NULL)) {
-    parser_error(parser, "EXpected null");
-    return NULL;
+    parser_error(parser, "Expected null");
   }
 
-  json_value_t *value = json_value_init(JSON_NULL);
+  json_value_t value = json_value_init(JSON_NULL);
   advance(parser);
   return value;
+}
+
+json_value_t parse(parser_t *parser) {
+  
 }

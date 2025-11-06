@@ -200,6 +200,27 @@ void token_free(token_t *token) {
   }
 }
 
+int token_compare(const char *input, const char *keyword) {
+  while (*keyword != '\0' && *input == *keyword) {
+    input++;
+    keyword++;
+  }
+
+  if (*keyword != '\0') {
+    return 1;
+  }
+
+  // Check that the next character in input is a valid delimiter
+  // Valid delimiters: whitespace, structural characters, or end of string
+  char next = *input;
+  if (next == '\0' || next == ' ' || next == '\t' || next == '\n' || next == '\r' ||
+      next == ',' || next == '}' || next == ']' || next == ':') {
+    return 0;
+  }
+
+  return 1;
+}
+
 token_t tokenize(lexer_t *lexer) {
   skip_whitespace(lexer);
 
@@ -245,7 +266,7 @@ token_t tokenize(lexer_t *lexer) {
     return tokenize_string(lexer);
   case 't':
     // Check for "true"
-    if (strncmp(lexer->current, "true", 4) == 0) {
+    if (token_compare(lexer->current, "true") == 0) {
       token.type = TOKEN_TRUE;
       token.lexeme = malloc(5);
       strcpy(token.lexeme, "true");
@@ -257,7 +278,7 @@ token_t tokenize(lexer_t *lexer) {
     break;
   case 'f':
     // Check for "false"
-    if (strncmp(lexer->current, "false", 5) == 0) {
+    if (token_compare(lexer->current, "false") == 0) {
       token.type = TOKEN_FALSE;
       token.lexeme = malloc(6);
       strcpy(token.lexeme, "false");
@@ -269,7 +290,7 @@ token_t tokenize(lexer_t *lexer) {
     break;
   case 'n':
     // Check for "null"
-    if (strncmp(lexer->current, "null", 4) == 0) {
+    if (token_compare(lexer->current, "null") == 0) {
       token.type = TOKEN_NULL;
       token.lexeme = malloc(5);
       strcpy(token.lexeme, "null");
@@ -282,6 +303,7 @@ token_t tokenize(lexer_t *lexer) {
   default:
     token.type = TOKEN_ERROR;
   }
+
 
   // For single character tokens and errors
   if (token.type != TOKEN_STRING) {
@@ -300,8 +322,6 @@ token_t next_token(lexer_t *lexer) {
     lexer->has_peeked = false;
     return lexer->last_token;
   }
-
-  token_free(&lexer->last_token);
 
   token_t token = tokenize(lexer);
   lexer->last_token = token;
