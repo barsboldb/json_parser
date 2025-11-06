@@ -203,21 +203,102 @@ void test_parser_error_handling() {
 void test_parse_simple_values() {
   printf("\n=== Testing parse_value with simple values ===\n");
 
-  // Note: These tests will work once parse_value() is implemented
-  // For now, they're placeholders that will be skipped
-
-  printf("  (parse_value tests require implementation)\n");
-
   // Test 1: Parse string value
-  // lexer_t lexer = lexer_init("\"hello\"");
-  // parser_t parser = parser_init(&lexer);
-  // parser.current_token = next_token(&lexer);
-  // json_value_t value = parse_value(&parser);
-  // TEST_ASSERT(value.type == JSON_STRING, "parse_value should parse string");
+  lexer_t lexer = lexer_init("\"hello\"");
+  parser_t parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  json_value_t value = parse_value(&parser);
+  TEST_ASSERT(value.type == JSON_STRING, "parse_value should parse string");
+  TEST_ASSERT(strcmp(value.string, "hello") == 0, "String value should be correct");
+  TEST_ASSERT(!parser.has_error, "Should not have error");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
 
   // Test 2: Parse number value
-  // Test 3: Parse boolean value
-  // Test 4: Parse null value
+  lexer = lexer_init("42");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_value(&parser);
+  TEST_ASSERT(value.type == JSON_NUMBER, "parse_value should parse number");
+  TEST_ASSERT(value.number == 42.0, "Number value should be correct");
+  TEST_ASSERT(!parser.has_error, "Should not have error");
+
+  lexer_free(&lexer);
+
+  // Test 3: Parse boolean true
+  lexer = lexer_init("true");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_value(&parser);
+  TEST_ASSERT(value.type == JSON_BOOL, "parse_value should parse boolean");
+  TEST_ASSERT(value.boolean == true, "Boolean value should be true");
+  TEST_ASSERT(!parser.has_error, "Should not have error");
+
+  lexer_free(&lexer);
+
+  // Test 4: Parse boolean false
+  lexer = lexer_init("false");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_value(&parser);
+  TEST_ASSERT(value.type == JSON_BOOL, "parse_value should parse false");
+  TEST_ASSERT(value.boolean == false, "Boolean value should be false");
+
+  lexer_free(&lexer);
+
+  // Test 5: Parse null value
+  lexer = lexer_init("null");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_value(&parser);
+  TEST_ASSERT(value.type == JSON_NULL, "parse_value should parse null");
+  TEST_ASSERT(!parser.has_error, "Should not have error");
+
+  lexer_free(&lexer);
+
+  // Test 6: Parse array value
+  lexer = lexer_init("[1, 2, 3]");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_value(&parser);
+  TEST_ASSERT(value.type == JSON_ARRAY, "parse_value should parse array");
+  TEST_ASSERT(value.array.len == 3, "Array should have 3 elements");
+  TEST_ASSERT(!parser.has_error, "Should not have error");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 7: Parse nested array
+  lexer = lexer_init("[[1], [2]]");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_value(&parser);
+  TEST_ASSERT(value.type == JSON_ARRAY, "parse_value should parse nested array");
+  TEST_ASSERT(value.array.len == 2, "Outer array should have 2 elements");
+  TEST_ASSERT(value.array.items[0].type == JSON_ARRAY, "First element should be array");
+  TEST_ASSERT(!parser.has_error, "Should not have error");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 8: Error - unexpected token
+  lexer = lexer_init("}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_value(&parser);
+  TEST_ASSERT(parser.has_error, "Should error on unexpected token");
+  TEST_ASSERT(value.type == JSON_NULL, "Should return null on error");
+
+  lexer_free(&lexer);
 }
 
 void test_parse_array() {
