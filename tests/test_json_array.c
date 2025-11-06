@@ -24,12 +24,13 @@ void test_json_value_array_creation() {
   TEST_ASSERT(arr2.array.len == 0, "Second array should start with length 0");
   free(arr2.array.items);
 
-  // Test 3: Create array with zero capacity (edge case)
+  // Test 3: Create array with zero capacity (uses minimum capacity)
   json_value_t arr3 = json_value_array(0);
   TEST_ASSERT(arr3.type == JSON_ARRAY, "Array with zero capacity should have JSON_ARRAY type");
-  TEST_ASSERT(arr3.array.cap == 0, "Array should have capacity 0");
+  TEST_ASSERT(arr3.array.cap == ARRAY_MIN_CAP, "Array should have minimum capacity");
   TEST_ASSERT(arr3.array.len == 0, "Array should have length 0");
-  // Note: malloc(0) behavior is implementation-defined, so we don't assert on items
+  TEST_ASSERT(arr3.array.items != NULL, "Array items should be allocated");
+  free(arr3.array.items);
 }
 
 void test_json_array_push() {

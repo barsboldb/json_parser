@@ -71,7 +71,7 @@ json_value_t json_value_init(json_type_t type) {
 void json_value_free(json_value_t *val) {
   if (val->type == JSON_STRING) free(val->string);
   if (val->type == JSON_ARRAY) free(val->array.items);
-  free(val);
+  // Note: Do not free val itself, as it may be stack-allocated
 }
 
 void json_array_push(json_value_t *arr, json_value_t val) {
@@ -125,9 +125,11 @@ json_value_t json_value_bool(bool boolean) {
 
 json_value_t json_value_array(size_t size) {
   json_value_t val = json_value_init(JSON_ARRAY);
-  val.array.items = malloc(sizeof(json_value_t) * size);
+  // Ensure minimum capacity of ARRAY_MIN_CAP
+  size_t cap = size < ARRAY_MIN_CAP ? ARRAY_MIN_CAP : size;
+  val.array.items = malloc(sizeof(json_value_t) * cap);
   val.array.len = 0;
-  val.array.cap = size;
+  val.array.cap = cap;
   return val;
 }
 json_value_t json_value_object(size_t size) {

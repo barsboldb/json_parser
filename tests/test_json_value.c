@@ -151,11 +151,11 @@ void test_json_value_array() {
   TEST_ASSERT(arr.array.len == 0, "New array should have length 0");
   TEST_ASSERT(arr.array.cap == 5, "Array should have specified capacity");
 
-  // Test 2: Create array with zero capacity
+  // Test 2: Create array with zero capacity (uses minimum capacity)
   json_value_t empty_arr = json_value_array(0);
   TEST_ASSERT(empty_arr.type == JSON_ARRAY, "Empty array should have JSON_ARRAY type");
   TEST_ASSERT(empty_arr.array.len == 0, "Empty array should have length 0");
-  TEST_ASSERT(empty_arr.array.cap == 0, "Empty array should have capacity 0");
+  TEST_ASSERT(empty_arr.array.cap == ARRAY_MIN_CAP, "Empty array should have minimum capacity");
 
   // Test 3: Create array with large capacity
   json_value_t large_arr = json_value_array(1000);
