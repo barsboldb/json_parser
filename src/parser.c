@@ -146,9 +146,55 @@ json_value_t parse_array(parser_t *parser) {
 }
 
 json_value_t parse_object(parser_t *parser) {
-  // TODO: Implement parse_object
-  parser_error(parser, "parse_object not yet implemented");
-  return json_value_init(JSON_NULL);
+  if (!check(parser, TOKEN_LBRACE)) {
+    parser_error(parser, "Expected '{'");
+    return json_value_object(0);
+  }
+  advance(parser);
+
+  json_value_t object = json_value_object(0);
+
+  if (check(parser, TOKEN_RBRACE)) {
+    advance(parser);
+    return object;
+  }
+
+  while (true) {
+    if (parser->has_error) {
+      return object;
+    }
+    if (!check(parser, TOKEN_STRING)) {
+      parser_error(parser, "Expected string key in object");
+      return object;
+    }
+
+    int len = strlen(parser->current_token.lexeme) + 1;
+    char *key = malloc(len);
+    strcpy(key, parser->current_token.lexeme);
+    advance(parser);
+
+    if (!check(parser, TOKEN_COLON)) {
+      parser_error(parser, "Expected ':'");
+      return object;
+    }
+
+    advance(parser);
+    json_value_t value = parse_value(parser);
+    json_object_set(&object, key, value);
+
+    if (check(parser, TOKEN_COMMA)) {
+      advance(parser);
+      continue;
+    } else if (check(parser, TOKEN_RBRACE)) {
+      break;
+    } else {
+      parser_error(parser, "Expected ',' or '}' in object");
+      return object;
+    }
+  }
+
+  advance(parser);  // Consume the closing '}'
+  return object;
 }
 
 json_value_t parse(parser_t *parser) {

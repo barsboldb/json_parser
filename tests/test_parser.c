@@ -431,22 +431,219 @@ void test_parse_array() {
   lexer_free(&lexer);
 }
 
-void test_parse_object_placeholder() {
-  printf("\n=== Testing parse_object (placeholder) ===\n");
-
-  printf("  (parse_object tests require implementation)\n");
+void test_parse_object() {
+  printf("\n=== Testing parse_object ===\n");
 
   // Test 1: Empty object
-  // lexer_t lexer = lexer_init("{}");
-  // parser_t parser = parser_init(&lexer);
-  // parser.current_token = next_token(&lexer);
-  // json_value_t value = parse_object(&parser);
-  // TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object type");
-  // TEST_ASSERT(value.object.len == 0, "Empty object should have length 0");
+  lexer_t lexer = lexer_init("{}");
+  parser_t parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
 
-  // Test 2: Object with single key-value pair
-  // Test 3: Object with multiple key-value pairs
-  // Test 4: Nested objects
+  json_value_t value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Empty object should have JSON_OBJECT type");
+  TEST_ASSERT(value.object.len == 0, "Empty object should have length 0");
+  TEST_ASSERT(!parser.has_error, "Should not have error for empty object");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 2: Object with single key-value pair (string)
+  lexer = lexer_init("{\"name\": \"John\"}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object type");
+  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
+  TEST_ASSERT(strcmp(value.object.entries[0].key, "name") == 0, "Key should be 'name'");
+  TEST_ASSERT(value.object.entries[0].value.type == JSON_STRING, "Value should be string");
+  TEST_ASSERT(strcmp(value.object.entries[0].value.string, "John") == 0, "String value should be 'John'");
+  TEST_ASSERT(!parser.has_error, "Should not have error");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 3: Object with single key-value pair (number)
+  lexer = lexer_init("{\"age\": 30}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with number");
+  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
+  TEST_ASSERT(strcmp(value.object.entries[0].key, "age") == 0, "Key should be 'age'");
+  TEST_ASSERT(value.object.entries[0].value.type == JSON_NUMBER, "Value should be number");
+  TEST_ASSERT(value.object.entries[0].value.number == 30.0, "Number value should be 30");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 4: Object with multiple key-value pairs
+  lexer = lexer_init("{\"name\": \"Alice\", \"age\": 25, \"active\": true}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with multiple entries");
+  TEST_ASSERT(value.object.len == 3, "Object should have 3 entries");
+
+  TEST_ASSERT(strcmp(value.object.entries[0].key, "name") == 0, "First key should be 'name'");
+  TEST_ASSERT(value.object.entries[0].value.type == JSON_STRING, "First value should be string");
+  TEST_ASSERT(strcmp(value.object.entries[0].value.string, "Alice") == 0, "First value should be 'Alice'");
+
+  TEST_ASSERT(strcmp(value.object.entries[1].key, "age") == 0, "Second key should be 'age'");
+  TEST_ASSERT(value.object.entries[1].value.type == JSON_NUMBER, "Second value should be number");
+  TEST_ASSERT(value.object.entries[1].value.number == 25.0, "Second value should be 25");
+
+  TEST_ASSERT(strcmp(value.object.entries[2].key, "active") == 0, "Third key should be 'active'");
+  TEST_ASSERT(value.object.entries[2].value.type == JSON_BOOL, "Third value should be boolean");
+  TEST_ASSERT(value.object.entries[2].value.boolean == true, "Third value should be true");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 5: Object with all value types
+  lexer = lexer_init("{\"str\": \"test\", \"num\": 42, \"bool\": false, \"null\": null}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with mixed types");
+  TEST_ASSERT(value.object.len == 4, "Object should have 4 entries");
+  TEST_ASSERT(value.object.entries[0].value.type == JSON_STRING, "First value type correct");
+  TEST_ASSERT(value.object.entries[1].value.type == JSON_NUMBER, "Second value type correct");
+  TEST_ASSERT(value.object.entries[2].value.type == JSON_BOOL, "Third value type correct");
+  TEST_ASSERT(value.object.entries[3].value.type == JSON_NULL, "Fourth value type correct");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 6: Object with array value
+  lexer = lexer_init("{\"numbers\": [1, 2, 3]}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with array value");
+  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
+  TEST_ASSERT(strcmp(value.object.entries[0].key, "numbers") == 0, "Key should be 'numbers'");
+  TEST_ASSERT(value.object.entries[0].value.type == JSON_ARRAY, "Value should be array");
+  TEST_ASSERT(value.object.entries[0].value.array.len == 3, "Array should have 3 elements");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 7: Nested object
+  lexer = lexer_init("{\"person\": {\"name\": \"Bob\", \"age\": 35}}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should parse nested object");
+  TEST_ASSERT(value.object.len == 1, "Outer object should have 1 entry");
+  TEST_ASSERT(strcmp(value.object.entries[0].key, "person") == 0, "Key should be 'person'");
+  TEST_ASSERT(value.object.entries[0].value.type == JSON_OBJECT, "Value should be object");
+  TEST_ASSERT(value.object.entries[0].value.object.len == 2, "Nested object should have 2 entries");
+  TEST_ASSERT(strcmp(value.object.entries[0].value.object.entries[0].key, "name") == 0, "Nested key should be 'name'");
+  TEST_ASSERT(strcmp(value.object.entries[0].value.object.entries[0].value.string, "Bob") == 0, "Nested value should be 'Bob'");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 8: Object with whitespace
+  lexer = lexer_init("{ \"key\" : \"value\" }");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should handle whitespace in object");
+  TEST_ASSERT(value.object.len == 1, "Object with whitespace should have 1 entry");
+  TEST_ASSERT(strcmp(value.object.entries[0].key, "key") == 0, "Key should be correct with whitespace");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 9: Complex nested structure
+  lexer = lexer_init("{\"users\": [{\"name\": \"Alice\"}, {\"name\": \"Bob\"}]}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(value.type == JSON_OBJECT, "Should parse complex nested structure");
+  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
+  TEST_ASSERT(value.object.entries[0].value.type == JSON_ARRAY, "Value should be array");
+  TEST_ASSERT(value.object.entries[0].value.array.len == 2, "Array should have 2 elements");
+  TEST_ASSERT(value.object.entries[0].value.array.items[0].type == JSON_OBJECT, "Array element should be object");
+  TEST_ASSERT(value.object.entries[0].value.array.items[0].object.len == 1, "First object should have 1 entry");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 10: Error - missing opening brace
+  lexer = lexer_init("\"key\": \"value\"}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(parser.has_error, "Should error on missing opening brace");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 11: Error - missing closing brace
+  lexer = lexer_init("{\"key\": \"value\"");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(parser.has_error, "Should error on missing closing brace");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 12: Error - missing colon
+  lexer = lexer_init("{\"key\" \"value\"}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(parser.has_error, "Should error on missing colon");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 13: Error - missing comma between entries
+  lexer = lexer_init("{\"key1\": \"value1\" \"key2\": \"value2\"}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(parser.has_error, "Should error on missing comma between entries");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 14: Error - key is not a string
+  lexer = lexer_init("{42: \"value\"}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(parser.has_error, "Should error when key is not a string");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
+
+  // Test 15: Error - missing value
+  lexer = lexer_init("{\"key\":}");
+  parser = parser_init(&lexer);
+  parser.current_token = next_token(&lexer);
+
+  value = parse_object(&parser);
+  TEST_ASSERT(parser.has_error, "Should error on missing value");
+
+  json_value_free(&value);
+  lexer_free(&lexer);
 }
 
 TEST_MAIN("Parser",
@@ -458,5 +655,5 @@ TEST_MAIN("Parser",
   test_parser_error_handling();
   test_parse_simple_values();
   test_parse_array();
-  test_parse_object_placeholder();
+  test_parse_object();
 )

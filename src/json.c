@@ -18,13 +18,13 @@ int json_array_cmp(json_value_t *a, json_value_t *b) {
 
 int json_object_cmp(json_value_t *a, json_value_t *b) {
   // TODO: Current implementation only checks ordered object. It should be
-  // ehanced to work with unordered objects; 
+  // ehanced to work with unordered objects;
   if (a->type != JSON_OBJECT || b->type != JSON_OBJECT) return -1;
   if (a->object.len != b->object.len) return -1;
 
   for (int i = 0; i < a->object.len; i++) {
     int str_res = strcmp(a->object.entries[i].key, b->object.entries[i].key);
-    int res = json_value_cmp(a->object.entries[i].value, b->object.entries[i].value);
+    int res = json_value_cmp(&a->object.entries[i].value, &b->object.entries[i].value);
     if (str_res != 0 || res != 0)
       return res;
   }
@@ -69,10 +69,94 @@ json_value_t json_value_init(json_type_t type) {
 }
 
 void json_value_free(json_value_t *val) {
-  if (val->type == JSON_STRING) free(val->string);
-  if (val->type == JSON_ARRAY) free(val->array.items);
+  if (val->type == JSON_STRING) {
+    free(val->string);
+  }
+  if (val->type == JSON_ARRAY) {
+    // Free nested values in array
+    for (size_t i = 0; i < val->array.len; i++) {
+      json_value_free(&val->array.items[i]);
+    }
+    free(val->array.items);
+  }
+  if (val->type == JSON_OBJECT) {
+    // Free keys and nested values in object
+    for (size_t i = 0; i < val->object.len; i++) {
+      free(val->object.entries[i].key);
+      json_value_free(&val->object.entries[i].value);
+    }
+    free(val->object.entries);
+  }
   // Note: Do not free val itself, as it may be stack-allocated
 }
+
+void json_object_set(json_value_t *obj, char *key, json_value_t val) {
+  if (obj->type != JSON_OBJECT) return;
+
+  if ((float)obj->object.len >= (float)obj->object.cap * 0.75) {
+    size_t new_cap = (obj->object.cap == 0) ? 4 : obj->object.cap;
+    json_object_entry *temp = realloc(
+      obj->object.entries,
+      new_cap * 2 * sizeof(json_object_entry)
+    );
+    if (!temp) {
+      if (obj->object.cap <= obj->object.len) return;
+    } else {
+      obj->object.entries = temp;
+      obj->object.cap = new_cap * 2;
+    }
+  }
+
+  json_object_entry *entry = NULL;
+
+  for (int i = 0; i < obj->object.len; i++) {
+    if (!strcmp(obj->object.entries[i].key, key)) {
+      entry = &obj->object.entries[i];
+      break;
+    }
+  }
+
+  if (!entry) {
+    json_object_entry new_entry = {.key = key, .value = val};
+    obj->object.entries[obj->object.len++] = new_entry;
+    return;
+  }
+
+  free(entry->key);
+  json_value_free(&entry->value);
+  entry->key = key;
+  entry->value = val;
+}
+
+json_value_t json_object_get(json_value_t *obj, char *key) {
+  if (obj->type != JSON_OBJECT) return json_value_init(JSON_NULL);
+
+  for (int i = 0; i < obj->object.len; i++) {
+    if (!strcmp(obj->object.entries[i].key, key)) {
+      return obj->object.entries[i].value;
+    }
+  }
+
+  return json_value_init(JSON_NULL);
+}
+
+int json_object_delete(json_value_t *obj, char *key) {
+  if (obj->type != JSON_OBJECT) return 1;
+  for (int i = 0; i < obj->object.len; i++) {
+    if (!strcmp(obj->object.entries[i].key, key)) {
+      // TODO: implement deletion
+      return 0;
+    }
+  }
+  return 1;
+}
+
+/*
+ * TODO: For robust object operation, following function must be implemented.
+ * json_object_clear(json_value_t *obj)
+ * json_object_keys(json_value_t *obj)
+ * json_object_has(json_value_t *obj, char *key)
+ */
 
 void json_array_push(json_value_t *arr, json_value_t val) {
   if ((float)arr->array.len >= (float)arr->array.cap * 0.75) {
