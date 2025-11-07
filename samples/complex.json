@@ -1,0 +1,44 @@
+{
+  "api_version": "v2.1",
+  "data": {
+    "users": [
+      {
+        "username": "user1",
+        "profile": {
+          "name": "John Doe",
+          "bio": null,
+          "verified": true,
+          "followers": 1250,
+          "tags": ["developer", "blogger"]
+        }
+      },
+      {
+        "username": "user2",
+        "profile": {
+          "name": "Jane Smith",
+          "bio": "Software engineer",
+          "verified": false,
+          "followers": 500,
+          "tags": []
+        }
+      }
+    ],
+    "posts": [
+      {
+        "id": 101,
+        "author": "user1",
+        "content": "Hello World!",
+        "likes": 42,
+        "comments": [
+          {"user": "user2", "text": "Great post!"},
+          {"user": "user3", "text": "Thanks for sharing"}
+        ]
+      }
+    ]
+  },
+  "metadata": {
+    "timestamp": 1699308421,
+    "source": "api",
+    "cached": false
+  }
+}

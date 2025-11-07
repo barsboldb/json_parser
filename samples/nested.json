@@ -1,0 +1,42 @@
+{
+  "company": "Tech Corp",
+  "employees": [
+    {
+      "id": 1,
+      "name": "Alice Johnson",
+      "age": 28,
+      "active": true,
+      "skills": ["JavaScript", "Python", "Go"],
+      "address": {
+        "street": "123 Main St",
+        "city": "San Francisco",
+        "zipcode": "94102"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Bob Smith",
+      "age": 35,
+      "active": false,
+      "skills": ["C", "C++", "Rust"],
+      "address": {
+        "street": "456 Oak Ave",
+        "city": "Seattle",
+        "zipcode": "98101"
+      }
+    }
+  ],
+  "departments": {
+    "engineering": {
+      "head": "Alice Johnson",
+      "size": 50
+    },
+    "marketing": {
+      "head": "Bob Smith",
+      "size": 20
+    }
+  },
+  "founded": 2010,
+  "public": true,
+  "revenue": null
+}

@@ -1,0 +1,33 @@
+{
+  "empty_string": "",
+  "empty_array": [],
+  "empty_object": {},
+  "nested_empty": {
+    "arr": [],
+    "obj": {}
+  },
+  "numbers": {
+    "integer": 42,
+    "negative": -123,
+    "decimal": 3.14159,
+    "scientific": 1.23e-4,
+    "zero": 0
+  },
+  "booleans": {
+    "true_val": true,
+    "false_val": false
+  },
+  "null_value": null,
+  "deeply_nested": {
+    "level1": {
+      "level2": {
+        "level3": {
+          "level4": {
+            "value": "deep"
+          }
+        }
+      }
+    }
+  },
+  "mixed_array": [1, "two", true, null, {"five": 5}, [6, 7, 8]]
+}
