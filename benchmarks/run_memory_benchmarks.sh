@@ -24,7 +24,7 @@ mkdir -p results
 
 # 1. Compile memory benchmark
 echo -e "${YELLOW}[1/2] Compiling memory benchmark...${NC}"
-gcc bench_memory.c ../src/*.c -I../include -o bench_memory -O3 -Wall
+gcc src/bench_memory.c ../src/*.c -I../include -o bin/bench_memory -O3 -Wall
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ Compilation successful${NC}"
 else
@@ -35,7 +35,7 @@ echo ""
 
 # 2. Run C memory benchmark
 echo -e "${YELLOW}[2/2] Running C memory benchmark...${NC}"
-./bench_memory
+./bin/bench_memory
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ C memory benchmark complete${NC}"
 else
@@ -46,7 +46,7 @@ echo ""
 
 # 3. Run JavaScript memory benchmark
 echo -e "${YELLOW}[3/2] Running Node.js memory benchmark...${NC}"
-node --expose-gc bench_memory_js.js
+node --expose-gc src/bench_memory_js.js
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ Node.js memory benchmark complete${NC}"
 else

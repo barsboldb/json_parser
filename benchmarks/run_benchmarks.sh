@@ -24,7 +24,7 @@ mkdir -p results
 
 # 1. Compile our parser benchmark
 echo -e "${YELLOW}[1/3] Compiling json_parser benchmark...${NC}"
-gcc bench_our_parser.c ../src/*.c -I../include -o bench_our_parser -O3 -Wall
+gcc src/bench_our_parser.c ../src/*.c -I../include -o bin/bench_our_parser -O3 -Wall
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ Compilation successful${NC}"
 else
@@ -35,7 +35,7 @@ echo ""
 
 # 2. Run our parser benchmark
 echo -e "${YELLOW}[2/3] Running json_parser benchmark...${NC}"
-./bench_our_parser
+./bin/bench_our_parser
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ json_parser benchmark complete${NC}"
 else
@@ -46,7 +46,7 @@ echo ""
 
 # 3. Run JavaScript benchmark
 echo -e "${YELLOW}[3/3] Running Node.js JSON.parse() benchmark...${NC}"
-node bench_javascript.js
+node src/bench_javascript.js
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ Node.js benchmark complete${NC}"
 else

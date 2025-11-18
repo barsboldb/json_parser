@@ -93,16 +93,19 @@ console.log('===========================================');
 console.log(`Node.js version: ${process.version}`);
 console.log(`V8 version: ${process.versions.v8}`);
 
+// Get benchmarks directory (parent of src)
+const benchmarksDir = path.join(__dirname, '..');
+
 const testFiles = [
-  '../samples/simple.json',
-  '../samples/array.json',
-  '../samples/nested.json',
-  '../samples/complex.json',
-  '../samples/edge_cases.json',
-  'data/large_array.json',
-  'data/large_object.json',
-  'data/deeply_nested.json',
-  'data/real_world_api.json'
+  path.join(benchmarksDir, '../samples/simple.json'),
+  path.join(benchmarksDir, '../samples/array.json'),
+  path.join(benchmarksDir, '../samples/nested.json'),
+  path.join(benchmarksDir, '../samples/complex.json'),
+  path.join(benchmarksDir, '../samples/edge_cases.json'),
+  path.join(benchmarksDir, 'data/large_array.json'),
+  path.join(benchmarksDir, 'data/large_object.json'),
+  path.join(benchmarksDir, 'data/deeply_nested.json'),
+  path.join(benchmarksDir, 'data/real_world_api.json')
 ];
 
 const iterationsMap = [
@@ -120,9 +123,8 @@ const iterationsMap = [
 const results = [];
 
 testFiles.forEach((file, i) => {
-  const filepath = path.join(__dirname, file);
   console.log(`\nBenchmarking: ${file}`);
-  const result = benchmarkFile(filepath, iterationsMap[i]);
+  const result = benchmarkFile(file, iterationsMap[i]);
   if (result) {
     printResult(result);
     results.push(result);
@@ -134,7 +136,7 @@ console.log('Benchmark Complete!');
 console.log('===========================================');
 
 // Ensure results directory exists
-const resultsDir = path.join(__dirname, 'results');
+const resultsDir = path.join(benchmarksDir, 'results');
 if (!fs.existsSync(resultsDir)) {
   fs.mkdirSync(resultsDir, { recursive: true });
 }

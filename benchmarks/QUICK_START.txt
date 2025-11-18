@@ -1,0 +1,52 @@
+╔════════════════════════════════════════════════════════════════╗
+║          JSON Parser Benchmarks - Quick Reference              ║
+╚════════════════════════════════════════════════════════════════╝
+
+📊 RUN BENCHMARKS
+──────────────────
+  Performance:  ./run_benchmarks.sh
+  Memory:       ./run_memory_benchmarks.sh
+
+📈 VIEW RESULTS
+──────────────────
+  Summary:      cat BENCHMARK_SUMMARY.md
+  Analysis:     cat OPTIMIZATION_IMPACT.md
+  CSV Data:     cat results/*.csv
+
+🏆 KEY ACHIEVEMENTS (String Slice Optimization)
+──────────────────────────────────────────────
+  ⚡ Performance:  1.9x faster (avg)
+  💾 Memory:       95%+ reduction in allocations
+  📈 Throughput:   765 MB/s peak (+56%)
+  ✅ Quality:      1126/1126 tests pass
+
+🥊 vs NODE.JS V8
+──────────────────
+  simple.json:    🏆 FASTER than V8!
+  array.json:     🟢 TIED with V8
+  Most files:     🟡 80-92% of V8 performance
+
+📁 DIRECTORY STRUCTURE
+──────────────────────
+  src/              Benchmark source code
+  bin/              Compiled binaries
+  data/             Test data files
+  results/          Latest benchmark results
+  results-archive/  Historical results
+
+📚 DOCUMENTATION
+──────────────────
+  README.md                 - Full documentation
+  BENCHMARK_SUMMARY.md      - Performance summary
+  OPTIMIZATION_IMPACT.md    - Detailed analysis
+
+🎯 NEXT OPTIMIZATIONS
+──────────────────────
+  1. Object/array growth    → 1.4x faster
+  2. Function inlining       → 1.2x faster
+  3. Arena allocator         → 1.1x faster
+  Target: 90-110% of V8 performance
+
+──────────────────────────────────────────────────────────────
+Generated: 2024-11-18 | Optimization: Zero-Copy String Slices
+──────────────────────────────────────────────────────────────
