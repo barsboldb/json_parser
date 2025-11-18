@@ -36,25 +36,25 @@ void test_json_value_string() {
   printf("\n=== Testing json_value_string ===\n");
 
   // Test 1: Create string value with regular text
-  json_value_t str_val = json_value_string("hello world");
+  json_value_t str_val = json_value_string(strdup("hello world"));
   TEST_ASSERT(str_val.type == JSON_STRING, "String value should have JSON_STRING type");
   TEST_ASSERT(str_val.string != NULL, "String pointer should not be NULL");
   TEST_ASSERT(strcmp(str_val.string, "hello world") == 0, "String content should match input");
 
   // Test 2: Create string value with empty string
-  json_value_t empty_str = json_value_string("");
+  json_value_t empty_str = json_value_string(strdup(""));
   TEST_ASSERT(empty_str.type == JSON_STRING, "Empty string should have JSON_STRING type");
   TEST_ASSERT(empty_str.string != NULL, "Empty string pointer should not be NULL");
   TEST_ASSERT(strlen(empty_str.string) == 0, "Empty string should have zero length");
   TEST_ASSERT(strcmp(empty_str.string, "") == 0, "Empty string content should be empty");
 
   // Test 3: Create string with special characters
-  json_value_t special_str = json_value_string("Hello\nWorld\t!");
+  json_value_t special_str = json_value_string(strdup("Hello\nWorld\t!"));
   TEST_ASSERT(special_str.type == JSON_STRING, "Special string should have JSON_STRING type");
   TEST_ASSERT(strcmp(special_str.string, "Hello\nWorld\t!") == 0, "Special characters should be preserved");
 
   // Test 4: Create string with quotes
-  json_value_t quoted_str = json_value_string("\"quoted\"");
+  json_value_t quoted_str = json_value_string(strdup("\"quoted\""));
   TEST_ASSERT(quoted_str.type == JSON_STRING, "Quoted string should have JSON_STRING type");
   TEST_ASSERT(strcmp(quoted_str.string, "\"quoted\"") == 0, "Quotes should be preserved in string");
 
@@ -64,8 +64,8 @@ void test_json_value_string() {
     long_string[i] = 'A' + (i % 26);
   }
   long_string[999] = '\0';
-  
-  json_value_t long_str = json_value_string(long_string);
+
+  json_value_t long_str = json_value_string(strdup(long_string));
   TEST_ASSERT(long_str.type == JSON_STRING, "Long string should have JSON_STRING type");
   TEST_ASSERT(strcmp(long_str.string, long_string) == 0, "Long string content should match");
   TEST_ASSERT(strlen(long_str.string) == 999, "Long string should have correct length");
@@ -199,7 +199,7 @@ void test_json_value_cmp() {
   printf("\n=== Testing json_value_cmp ===\n");
 
   // Test 1: Compare different types (should return -1)
-  json_value_t str_val = json_value_string("test");
+  json_value_t str_val = json_value_string(strdup("test"));
   json_value_t num_val = json_value_number(42);
   TEST_ASSERT(json_value_cmp(&str_val, &num_val) == -1, "Different types should return -1");
   TEST_ASSERT(json_value_cmp(&num_val, &str_val) == -1, "Different types should return -1 (reversed)");
@@ -226,9 +226,9 @@ void test_json_value_cmp() {
   TEST_ASSERT(json_value_cmp(&bool_false, &bool_true1) == -1, "false - true should be -1");
 
   // Test 5: Compare string values
-  json_value_t str1 = json_value_string("apple");
-  json_value_t str2 = json_value_string("banana");
-  json_value_t str3 = json_value_string("apple");
+  json_value_t str1 = json_value_string(strdup("apple"));
+  json_value_t str2 = json_value_string(strdup("banana"));
+  json_value_t str3 = json_value_string(strdup("apple"));
   TEST_ASSERT(json_value_cmp(&str1, &str2) < 0, "\"apple\" should come before \"banana\"");
   TEST_ASSERT(json_value_cmp(&str2, &str1) > 0, "\"banana\" should come after \"apple\"");
   TEST_ASSERT(json_value_cmp(&str1, &str3) == 0, "Equal strings should return 0");
@@ -265,13 +265,13 @@ void test_json_array_cmp() {
   // Test 3: Compare arrays with same elements
   json_value_t arr3 = json_value_array(2);
   json_value_t val4 = json_value_number(10);
-  json_value_t val5 = json_value_string("test");
+  json_value_t val5 = json_value_string(strdup("test"));
   json_array_push(&arr3, val4);
   json_array_push(&arr3, val5);
   
   json_value_t arr4 = json_value_array(2);
   json_value_t val6 = json_value_number(10);
-  json_value_t val7 = json_value_string("test");
+  json_value_t val7 = json_value_string(strdup("test"));
   json_array_push(&arr4, val6);
   json_array_push(&arr4, val7);
   
@@ -318,7 +318,7 @@ void test_json_value_free() {
 
   // Test 1: Free string value
   json_value_t *str_val = malloc(sizeof(json_value_t));
-  *str_val = json_value_string("test string");
+  *str_val = json_value_string(strdup("test string"));
   // Note: json_value_free should free both the string content and the value itself
   // This test mainly ensures no crashes occur
   json_value_free(str_val);
@@ -354,7 +354,9 @@ void test_json_value_edge_cases() {
 
   // Test 1: String with null character in middle
   char str_with_null[] = {'h', 'e', 'l', '\0', 'l', 'o', '\0'};
-  json_value_t str_val = json_value_string(str_with_null);
+  char *heap_str = malloc(sizeof(str_with_null));
+  memcpy(heap_str, str_with_null, sizeof(str_with_null));
+  json_value_t str_val = json_value_string(heap_str);
   TEST_ASSERT(str_val.type == JSON_STRING, "String with embedded null should have correct type");
   TEST_ASSERT(strlen(str_val.string) == 3, "String should stop at first null character");
   free(str_val.string);

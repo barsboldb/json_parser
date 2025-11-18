@@ -39,7 +39,7 @@ void test_json_array_push() {
   json_value_t arr = json_value_array(2);
 
   // Test 1: Push string value
-  json_value_t str_val = json_value_string("hello");
+  json_value_t str_val = json_value_string(strdup("hello"));
   json_array_push(&arr, str_val);
   TEST_ASSERT(arr.array.len == 1, "Array length should be 1 after first push");
   TEST_ASSERT(arr.array.items[0].type == JSON_STRING, "First item should be string type");
@@ -87,7 +87,7 @@ void test_json_array_pop() {
   TEST_ASSERT(arr.array.len == 0, "Array length should remain 0");
 
   // Fill array with test values
-  json_value_t val1 = json_value_string("first");
+  json_value_t val1 = json_value_string(strdup("first"));
   json_value_t val2 = json_value_number(123);
   json_value_t val3 = json_value_bool(false);
   json_value_t val4 = json_value_init(JSON_NULL);
@@ -134,7 +134,7 @@ void test_json_array_mixed_operations() {
   json_value_t arr = json_value_array(2);
 
   // Test push and pop sequence
-  json_value_t val1 = json_value_string("test1");
+  json_value_t val1 = json_value_string(strdup("test1"));
   json_value_t val2 = json_value_number(456.789);
 
   json_array_push(&arr, val1);
@@ -224,7 +224,7 @@ void test_json_array_edge_cases() {
 
   // Test with nested arrays
   json_value_t nested_arr = json_value_array(2);
-  json_value_t inner_val = json_value_string("nested");
+  json_value_t inner_val = json_value_string(strdup("nested"));
   json_array_push(&nested_arr, inner_val);
   json_array_push(&arr, nested_arr);
 
@@ -271,13 +271,13 @@ void test_json_array_comparison() {
   // Test 3: Compare arrays with same elements
   json_value_t arr3 = json_value_array(2);
   json_value_t val4 = json_value_number(10);
-  json_value_t val5 = json_value_string("test");
+  json_value_t val5 = json_value_string(strdup("test"));
   json_array_push(&arr3, val4);
   json_array_push(&arr3, val5);
-  
+
   json_value_t arr4 = json_value_array(2);
   json_value_t val6 = json_value_number(10);
-  json_value_t val7 = json_value_string("test");
+  json_value_t val7 = json_value_string(strdup("test"));
   json_array_push(&arr4, val6);
   json_array_push(&arr4, val7);
   
@@ -285,11 +285,11 @@ void test_json_array_comparison() {
 
   // Test 4: Compare arrays with different elements
   json_value_t arr5 = json_value_array(1);
-  json_value_t val8 = json_value_string("different");
+  json_value_t val8 = json_value_string(strdup("different"));
   json_array_push(&arr5, val8);
-  
+
   json_value_t arr6 = json_value_array(1);
-  json_value_t val9 = json_value_string("test");
+  json_value_t val9 = json_value_string(strdup("test"));
   json_array_push(&arr6, val9);
   
   int cmp_result = json_array_cmp(&arr5, &arr6);

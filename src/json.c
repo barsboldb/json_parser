@@ -180,7 +180,7 @@ int json_array_pop(json_value_t *arr) {
   if (arr->array.len > 0 && arr->array.len < arr->array.cap / 4) {
     size_t new_cap = arr->array.cap / 2;
     if (new_cap < ARRAY_MIN_CAP) new_cap = ARRAY_MIN_CAP;
-    json_array_resize(arr->array.items, new_cap);
+    json_array_resize(arr, new_cap);
   }
 
   return 0;
@@ -188,10 +188,7 @@ int json_array_pop(json_value_t *arr) {
 
 json_value_t json_value_string(char *str) {
   json_value_t val = json_value_init(JSON_STRING);
-  size_t len = strlen(str);
-  val.string = malloc(len + 1);
-  strncpy(val.string, str, len);
-  val.string[len] = '\0';
+  val.string = str;
   return val;
 }
 

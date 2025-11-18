@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define SMALL_BUFFER 32
+
 typedef enum {
   TOKEN_LBRACE,
   TOKEN_RBRACE,
@@ -20,9 +22,14 @@ typedef enum {
 } token_type_t;
 
 typedef struct {
+  const char *start;
+  size_t length;
+} string_slice_t;
+
+typedef struct {
   token_type_t type;
   int line, column;
-  char *lexeme;
+  string_slice_t lexeme;
 } token_t;
 
 typedef struct {
@@ -39,6 +46,13 @@ typedef struct {
 int is_digit(char);
 int is_space(char);
 void skip_whitespace(lexer_t *);
+
+// String slice helper functions
+char *slice_to_string(string_slice_t);
+int slice_strcmp(string_slice_t, char *);
+int slice_cmp(string_slice_t, string_slice_t);
+double slice_to_double(string_slice_t);
+void slice_print(string_slice_t);
 
 
 lexer_t lexer_init(const char *);

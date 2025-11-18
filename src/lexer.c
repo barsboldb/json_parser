@@ -11,7 +11,10 @@ lexer_t lexer_init(const char *input) {
     .column = 1,
     .has_peeked = false,
     .last_token = {
-      .lexeme = NULL,
+      .lexeme = {
+        .start = NULL,
+        .length = 0,
+      },
     },
   };
   return lexer;
@@ -21,6 +24,48 @@ void lexer_free(lexer_t *lexer) {
   if (lexer->start) {
     free((char *)lexer->start);
   }
+}
+
+// String slice helper functions
+char *slice_to_string(string_slice_t slice) {
+  char *str = malloc(slice.length + 1);
+  memcpy(str, slice.start, slice.length);
+  str[slice.length] = '\0';
+  return str;
+}
+
+int slice_strcmp(string_slice_t slice, char *str) {
+  size_t str_len = strlen(str);
+  if (str_len != slice.length) {
+    return slice.length - str_len;
+  }
+  return memcmp(slice.start, str, slice.length);
+}
+
+int slice_cmp(string_slice_t a, string_slice_t b) {
+  if (a.length != b.length) {
+    return a.length > b.length ? 1 : -1;
+  }
+  return memcmp(a.start, b.start, a.length);
+}
+
+double slice_to_double(string_slice_t slice) {
+  char buffer[SMALL_BUFFER];
+  if (slice.length < SMALL_BUFFER) {
+    memcpy(buffer, slice.start, slice.length);
+    buffer[slice.length] = '\0';
+    return strtod(buffer, NULL);
+  }
+
+  // Fallback heap allocation
+  char *temp = slice_to_string(slice);
+  double res = strtod(temp, NULL);
+  free(temp);
+  return res;
+}
+
+void slice_print(string_slice_t slice) {
+  printf("%.*s", (int)slice.length, slice.start);
 }
 
 // Helper function to check if character is a digit
@@ -56,9 +101,8 @@ token_t tokenize_number(lexer_t *lexer) {
     token.type = TOKEN_ERROR;
     token.line = lexer->line;
     token.column = lexer->column;
-    token.lexeme = malloc(2);
-    token.lexeme[0] = *lexer->current;
-    token.lexeme[1] = '\0';
+    token.lexeme.start = lexer->current;
+    token.lexeme.length = 1;
     return token;
   }
 
@@ -85,9 +129,8 @@ token_t tokenize_number(lexer_t *lexer) {
       token.type = TOKEN_ERROR;
       token.line = lexer->line;
       token.column = lexer->column;
-      token.lexeme = malloc(2);
-      token.lexeme[0] = *lexer->current;
-      token.lexeme[1] = '\0';
+      token.lexeme.start = lexer->current;
+      token.lexeme.length = 1;
       return token;
     }
 
@@ -113,9 +156,8 @@ token_t tokenize_number(lexer_t *lexer) {
       token.type = TOKEN_ERROR;
       token.line = lexer->line;
       token.column = lexer->column;
-      token.lexeme = malloc(2);
-      token.lexeme[0] = *lexer->current;
-      token.lexeme[1] = '\0';
+      token.lexeme.start = lexer->current;
+      token.lexeme.length = 1;
       return token;
     }
 
@@ -130,9 +172,8 @@ token_t tokenize_number(lexer_t *lexer) {
   token.type = TOKEN_NUMBER;
   token.line = lexer->line;
   token.column = lexer->column - len;
-  token.lexeme = malloc(len + 1);
-  memcpy(token.lexeme, start, len);
-  token.lexeme[len] = '\0';
+  token.lexeme.start = start;
+  token.lexeme.length = len;
 
   return token;
 }
@@ -172,8 +213,8 @@ token_t tokenize_string(lexer_t *lexer) {
     token.type = TOKEN_ERROR;
     token.line = lexer->line;
     token.column = lexer->column;
-    token.lexeme = malloc(20);
-    strcpy(token.lexeme, "Unterminated string");
+    token.lexeme.start = "Unterminated string";
+    token.lexeme.length = 19; 
     return token;
   }
 
@@ -182,9 +223,8 @@ token_t tokenize_string(lexer_t *lexer) {
   token.type = TOKEN_STRING;
   token.line = lexer->line;
   token.column = lexer->column - len - 1; // Adjust for opening quote
-  token.lexeme = malloc(len + 1);
-  memcpy(token.lexeme, start, len);
-  token.lexeme[len] = '\0';
+  token.lexeme.start = start;
+  token.lexeme.length = len;
 
   // Skip closing quote
   lexer->current++;
@@ -194,10 +234,6 @@ token_t tokenize_string(lexer_t *lexer) {
 }
 
 void token_free(token_t *token) {
-  if (token->lexeme) {
-    free(token->lexeme);
-    token->lexeme = NULL;
-  }
 }
 
 int token_compare(const char *input, const char *keyword) {
@@ -230,20 +266,20 @@ token_t tokenize(lexer_t *lexer) {
 
   if (*lexer->current == '\0') {
     token.type = TOKEN_EOF;
-    token.lexeme = malloc(1);
-    token.lexeme[0] = '\0';
+    token.lexeme.start = lexer->current;
+    token.lexeme.length = 0;
     return token;
   }
 
-  char ch = *lexer->current;
+  const char *ch = lexer->current;
 
   // Check for numbers (including negative numbers)
-  if (is_digit(ch) || (ch == '-' && is_digit(lexer->current[1]))) {
+  if (is_digit(*ch) || (*ch == '-' && is_digit(lexer->current[1]))) {
     return tokenize_number(lexer);
   }
 
   // Single character tokens
-  switch (ch) {
+  switch (*ch) {
   case '{':
     token.type = TOKEN_LBRACE;
     break;
@@ -268,8 +304,8 @@ token_t tokenize(lexer_t *lexer) {
     // Check for "true"
     if (token_compare(lexer->current, "true") == 0) {
       token.type = TOKEN_TRUE;
-      token.lexeme = malloc(5);
-      strcpy(token.lexeme, "true");
+      token.lexeme.start = lexer->current;
+      token.lexeme.length = 4;
       lexer->current += 4;
       lexer->column += 4;
       return token;
@@ -280,8 +316,8 @@ token_t tokenize(lexer_t *lexer) {
     // Check for "false"
     if (token_compare(lexer->current, "false") == 0) {
       token.type = TOKEN_FALSE;
-      token.lexeme = malloc(6);
-      strcpy(token.lexeme, "false");
+      token.lexeme.start = lexer->current;
+      token.lexeme.length = 5;
       lexer->current += 5;
       lexer->column += 5;
       return token;
@@ -292,8 +328,8 @@ token_t tokenize(lexer_t *lexer) {
     // Check for "null"
     if (token_compare(lexer->current, "null") == 0) {
       token.type = TOKEN_NULL;
-      token.lexeme = malloc(5);
-      strcpy(token.lexeme, "null");
+      token.lexeme.start = lexer->current;
+      token.lexeme.length = 4;
       lexer->current += 4;
       lexer->column += 4;
       return token;
@@ -307,9 +343,8 @@ token_t tokenize(lexer_t *lexer) {
 
   // For single character tokens and errors
   if (token.type != TOKEN_STRING) {
-    token.lexeme = malloc(2);
-    token.lexeme[0] = ch;
-    token.lexeme[1] = '\0';
+    token.lexeme.start = ch;
+    token.lexeme.length = 1;
     lexer->current++;
     lexer->column++;
   }
@@ -337,58 +372,60 @@ token_t peek_token(lexer_t *lexer) {
 }
 
 void print_token(token_t *token) {
+  char *lexeme = slice_to_string(token->lexeme);
   switch (token->type) {
   case TOKEN_LBRACE:
     printf("TOKEN_LBRACE col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_RBRACE:
     printf("TOKEN_RBRACE col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_LBRACKET:
     printf("TOKEN_LBRACKET col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_RBRACKET:
     printf("TOKEN_RBRACKET col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_COLON:
     printf("TOKEN_COLON col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_COMMA:
     printf("TOKEN_COMMA col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_STRING:
     printf("TOKEN_STRING col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_NUMBER:
     printf("TOKEN_NUMBER col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_TRUE:
     printf("TOKEN_TRUE col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_FALSE:
     printf("TOKEN_FALSE col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_NULL:
     printf("TOKEN_NULL col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   case TOKEN_EOF:
     printf("TOKEN_EOF col: %d lin: %d lexeme: %s\n", token->column, token->line,
-           token->lexeme);
+           lexeme);
     break;
   case TOKEN_ERROR:
     printf("TOKEN_ERROR col: %d lin: %d lexeme: %s\n", token->column,
-           token->line, token->lexeme);
+           token->line, lexeme);
     break;
   }
+  free(lexeme);
 }

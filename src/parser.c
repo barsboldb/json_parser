@@ -41,7 +41,8 @@ json_value_t parse_string(parser_t *parser) {
     parser_error(parser, "Expected string");
   }
 
-  json_value_t value = json_value_string(parser->current_token.lexeme);
+  char *str = slice_to_string(parser->current_token.lexeme);
+  json_value_t value = json_value_string(str);
   advance(parser);
   return value;
 }
@@ -51,7 +52,7 @@ json_value_t parse_number(parser_t *parser) {
     parser_error(parser, "Expected number");
   }
 
-  double num = strtod(parser->current_token.lexeme, NULL);
+  double num = slice_to_double(parser->current_token.lexeme);
   json_value_t value = json_value_number(num);
   advance(parser);
   return value;
@@ -168,9 +169,7 @@ json_value_t parse_object(parser_t *parser) {
       return object;
     }
 
-    int len = strlen(parser->current_token.lexeme) + 1;
-    char *key = malloc(len);
-    strcpy(key, parser->current_token.lexeme);
+    char *key = slice_to_string(parser->current_token.lexeme);
     advance(parser);
 
     if (!check(parser, TOKEN_COLON)) {
