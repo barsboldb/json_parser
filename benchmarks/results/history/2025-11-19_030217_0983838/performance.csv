@@ -1,0 +1,10 @@
+Library,Filename,Size(KB),Iterations,TotalTime(ms),AvgTime(ms),MinTime(ms),MaxTime(ms),Throughput(MB/s)
+json_parser,../samples/simple.json,0.06,10000,2.42,0.0002,0.0000,0.0071,236.12
+json_parser,../samples/array.json,0.03,10000,1.67,0.0002,0.0000,0.0139,165.69
+json_parser,../samples/nested.json,0.77,5000,11.80,0.0024,0.0020,0.0110,318.37
+json_parser,../samples/complex.json,0.87,5000,11.94,0.0024,0.0020,0.0220,356.71
+json_parser,../samples/edge_cases.json,0.55,5000,10.34,0.0021,0.0010,0.0181,261.52
+json_parser,data/large_array.json,192.73,500,262.36,0.5247,0.5149,0.6201,358.70
+json_parser,data/large_object.json,77.87,500,277.76,0.5555,0.5459,0.6750,136.90
+json_parser,data/deeply_nested.json,36.04,1000,42.56,0.0426,0.0408,0.0591,826.92
+json_parser,data/real_world_api.json,247.09,500,273.19,0.5464,0.5369,0.6631,441.63
