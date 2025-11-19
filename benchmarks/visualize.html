@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Parser Benchmark Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+
+        .error {
+            background: #fee;
+            border: 2px solid #c33;
+            color: #c33;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .runs-toggle {
+            margin-top: 20px;
+        }
+
+        .runs-toggle h3 {
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .run-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 12px;
+        }
+
+        .run-checkbox {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .run-checkbox:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .run-checkbox input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .run-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .run-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .run-meta {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .chart-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .chart-tab:hover {
+            color: #667eea;
+        }
+
+        .chart-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .chart-container {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        .chart-container.active {
+            display: block;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 500px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .export-btn:hover {
+            background: #5568d3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .control-row {
+                flex-direction: column;
+            }
+
+            .run-checkboxes {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 JSON Parser Benchmarks</h1>
+        <p class="subtitle">Interactive Performance & Memory Analysis</p>
+
+        <div id="loading" class="loading">
+            <div>Loading benchmark data...</div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="content" style="display: none;">
+            <!-- Statistics Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Runs</div>
+                    <div class="stat-value" id="stat-runs">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Latest Run</div>
+                    <div class="stat-value" id="stat-latest" style="font-size: 1.2em;">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Current Branch</div>
+                    <div class="stat-value" id="stat-branch" style="font-size: 1.5em;">-</div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="metric-select">📊 Metric</label>
+                        <select id="metric-select">
+                            <option value="parseTime">Parse Time (ms)</option>
+                            <option value="throughput">Throughput (MB/s)</option>
+                            <option value="heapAllocated">Heap Allocated (KB)</option>
+                            <option value="allocCount">Allocation Count</option>
+                            <option value="rssDelta">RSS Delta (KB)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="file-select">📄 Test File</label>
+                        <select id="file-select">
+                            <option value="all">All Files (Average)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>📈 Options</label>
+                        <button class="export-btn" onclick="exportData()">Export CSV</button>
+                    </div>
+                </div>
+
+                <div class="runs-toggle">
+                    <h3>🎯 Benchmark Runs (click to toggle)</h3>
+                    <div class="run-checkboxes" id="run-checkboxes"></div>
+                </div>
+            </div>
+
+            <!-- Chart Tabs -->
+            <div class="chart-tabs">
+                <button class="chart-tab active" data-chart="timeline">📈 Timeline</button>
+                <button class="chart-tab" data-chart="commits">🔵 Commits</button>
+                <button class="chart-tab" data-chart="compare">📊 Compare</button>
+                <button class="chart-tab" data-chart="delta">🔺 Delta</button>
+            </div>
+
+            <!-- Charts -->
+            <div id="chart-timeline" class="chart-container active">
+                <h2>Performance Over Time</h2>
+                <div class="chart-wrapper">
+                    <canvas id="timeline-chart"></canvas>
+                </div>
+            </div>
+
+            <div id="chart-commits" class="chart-container">
+                <h2>Commit Timeline Scatter</h2>
+                <div class="chart-wrapper">
+                    <canvas id="commits-chart"></canvas>
+                </div>
+            </div>
+
+            <div id="chart-compare" class="chart-container">
+                <h2>Side-by-Side Comparison</h2>
+                <div class="chart-wrapper">
+                    <canvas id="compare-chart"></canvas>
+                </div>
+            </div>
+
+            <div id="chart-delta" class="chart-container">
+                <h2>Performance Delta (% Change)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="delta-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let allRuns = [];
+        let performanceData = {};
+        let memoryData = {};
+        let selectedRuns = new Set();
+        let charts = {};
+
+        // Chart colors
+        const colors = [
+            '#667eea', '#f093fb', '#4facfe', '#43e97b',
+            '#fa709a', '#fee140', '#30cfd0', '#c471f5',
+            '#f7797d', '#fbd786'
+        ];
+
+        // Load and initialize
+        async function loadData() {
+            try {
+                const response = await fetch('results/index.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load index.json');
+                }
+
+                const index = await response.json();
+                allRuns = index.runs || [];
+
+                if (allRuns.length === 0) {
+                    showError('No benchmark runs found. Run "make benchmark" to create your first benchmark.');
+                    return;
+                }
+
+                // Load performance and memory data for each run
+                await Promise.all(allRuns.map(async (run) => {
+                    if (run.hasPerformance) {
+                        const perfData = await loadCSV(`results/${run.path}/performance.csv`);
+                        performanceData[run.runId] = perfData;
+                    }
+                    if (run.hasMemory) {
+                        const memData = await loadCSV(`results/${run.path}/memory.csv`);
+                        memoryData[run.runId] = memData;
+                    }
+                }));
+
+                // Select all runs by default
+                selectedRuns = new Set(allRuns.map(r => r.runId));
+
+                initializeUI();
+                updateCharts();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                showError(`Error loading data: ${error.message}<br><br>Make sure you run "make benchmark" first to generate benchmark data.`);
+            }
+        }
+
+        async function loadCSV(path) {
+            const response = await fetch(path);
+            const text = await response.text();
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',');
+
+            return lines.slice(1).map(line => {
+                const values = line.split(',');
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header.trim()] = values[i] ? values[i].trim() : '';
+                });
+                return obj;
+            });
+        }
+
+        function initializeUI() {
+            // Update stats
+            document.getElementById('stat-runs').textContent = allRuns.length;
+            if (allRuns.length > 0) {
+                const latest = allRuns[0];
+                document.getElementById('stat-latest').textContent = latest.commit;
+                document.getElementById('stat-branch').textContent = latest.branch;
+            }
+
+            // Populate file selector
+            const fileSelect = document.getElementById('file-select');
+            const firstRun = allRuns.find(r => performanceData[r.runId]);
+            if (firstRun) {
+                const files = performanceData[firstRun.runId].map(row => row.Filename || row.filename);
+                const uniqueFiles = [...new Set(files)];
+                uniqueFiles.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file;
+                    option.textContent = file.split('/').pop();
+                    fileSelect.appendChild(option);
+                });
+            }
+
+            // Populate run checkboxes
+            const checkboxContainer = document.getElementById('run-checkboxes');
+            allRuns.forEach((run, index) => {
+                const div = document.createElement('div');
+                div.className = 'run-checkbox';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `run-${run.runId}`;
+                checkbox.checked = true;
+                checkbox.onchange = () => toggleRun(run.runId);
+
+                const info = document.createElement('div');
+                info.className = 'run-info';
+                info.innerHTML = `
+                    <div class="run-label">${run.label}</div>
+                    <div class="run-meta">${new Date(run.timestamp).toLocaleString()} • ${run.commit}</div>
+                `;
+
+                div.appendChild(checkbox);
+                div.appendChild(info);
+                checkboxContainer.appendChild(div);
+            });
+
+            // Setup event listeners
+            document.getElementById('metric-select').onchange = updateCharts;
+            document.getElementById('file-select').onchange = updateCharts;
+
+            // Chart tab switching
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.onclick = () => switchChart(tab.dataset.chart);
+            });
+        }
+
+        function toggleRun(runId) {
+            if (selectedRuns.has(runId)) {
+                selectedRuns.delete(runId);
+            } else {
+                selectedRuns.add(runId);
+            }
+            updateCharts();
+        }
+
+        function switchChart(chartName) {
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.chart-container').forEach(c => c.classList.remove('active'));
+
+            document.querySelector(`[data-chart="${chartName}"]`).classList.add('active');
+            document.getElementById(`chart-${chartName}`).classList.add('active');
+        }
+
+        function getMetricValue(runId, filename, metric) {
+            const perfRow = performanceData[runId]?.find(r => r.Filename === filename);
+            const memRow = memoryData[runId]?.find(r => r.Filename === filename);
+
+            switch(metric) {
+                case 'parseTime':
+                    return parseFloat(perfRow?.['AvgTime(ms)'] || perfRow?.AvgTime || 0);
+                case 'throughput':
+                    return parseFloat(perfRow?.['Throughput(MB/s)'] || perfRow?.Throughput || 0);
+                case 'heapAllocated':
+                    return parseFloat(memRow?.['HeapAllocated(KB)'] || memRow?.HeapAllocated || 0);
+                case 'allocCount':
+                    return parseInt(memRow?.AllocCount || 0);
+                case 'rssDelta':
+                    return parseFloat(memRow?.['RSS_Delta(KB)'] || memRow?.RSS_Delta || 0);
+                default:
+                    return 0;
+            }
+        }
+
+        function updateCharts() {
+            const metric = document.getElementById('metric-select').value;
+            const filename = document.getElementById('file-select').value;
+
+            const selected = allRuns.filter(r => selectedRuns.has(r.runId));
+
+            if (selected.length === 0) {
+                return;
+            }
+
+            updateTimelineChart(selected, metric, filename);
+            updateCommitsChart(selected, metric, filename);
+            updateCompareChart(selected, metric, filename);
+            updateDeltaChart(selected, metric, filename);
+        }
+
+        function updateTimelineChart(runs, metric, filename) {
+            const ctx = document.getElementById('timeline-chart');
+
+            if (charts.timeline) {
+                charts.timeline.destroy();
+            }
+
+            const datasets = runs.map((run, index) => {
+                let value;
+                if (filename === 'all') {
+                    // Average across all files
+                    const files = performanceData[run.runId]?.map(r => r.Filename) || [];
+                    const values = files.map(f => getMetricValue(run.runId, f, metric));
+                    value = values.reduce((a, b) => a + b, 0) / values.length;
+                } else {
+                    value = getMetricValue(run.runId, filename, metric);
+                }
+
+                return {
+                    label: run.label,
+                    data: [{x: new Date(run.timestamp), y: value}],
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '33',
+                    tension: 0.4
+                };
+            });
+
+            charts.timeline = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: getMetricLabel(metric)
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCommitsChart(runs, metric, filename) {
+            const ctx = document.getElementById('commits-chart');
+
+            if (charts.commits) {
+                charts.commits.destroy();
+            }
+
+            const data = runs.map((run, index) => {
+                let value;
+                if (filename === 'all') {
+                    const files = performanceData[run.runId]?.map(r => r.Filename) || [];
+                    const values = files.map(f => getMetricValue(run.runId, f, metric));
+                    value = values.reduce((a, b) => a + b, 0) / values.length;
+                } else {
+                    value = getMetricValue(run.runId, filename, metric);
+                }
+
+                return {
+                    x: new Date(run.timestamp),
+                    y: value,
+                    label: run.label,
+                    commit: run.commit
+                };
+            });
+
+            charts.commits = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Benchmark Runs',
+                        data: data,
+                        backgroundColor: colors[0],
+                        borderColor: colors[0],
+                        pointRadius: 8,
+                        pointHoverRadius: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Commit Date'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: getMetricLabel(metric)
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const point = data[context.dataIndex];
+                                    return `${point.label} (${point.commit}): ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCompareChart(runs, metric, filename) {
+            const ctx = document.getElementById('compare-chart');
+
+            if (charts.compare) {
+                charts.compare.destroy();
+            }
+
+            const labels = runs.map(r => r.label);
+            const data = runs.map((run, index) => {
+                if (filename === 'all') {
+                    const files = performanceData[run.runId]?.map(r => r.Filename) || [];
+                    const values = files.map(f => getMetricValue(run.runId, f, metric));
+                    return values.reduce((a, b) => a + b, 0) / values.length;
+                } else {
+                    return getMetricValue(run.runId, filename, metric);
+                }
+            });
+
+            charts.compare = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: getMetricLabel(metric),
+                        data: data,
+                        backgroundColor: colors.slice(0, runs.length),
+                        borderColor: colors.slice(0, runs.length),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: getMetricLabel(metric)
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDeltaChart(runs, metric, filename) {
+            const ctx = document.getElementById('delta-chart');
+
+            if (charts.delta) {
+                charts.delta.destroy();
+            }
+
+            if (runs.length < 2) {
+                // Not enough data for delta
+                return;
+            }
+
+            const labels = [];
+            const data = [];
+
+            for (let i = 1; i < runs.length; i++) {
+                const prev = runs[i];
+                const curr = runs[i - 1];
+
+                let prevValue, currValue;
+                if (filename === 'all') {
+                    const files = performanceData[prev.runId]?.map(r => r.Filename) || [];
+                    const prevValues = files.map(f => getMetricValue(prev.runId, f, metric));
+                    const currValues = files.map(f => getMetricValue(curr.runId, f, metric));
+                    prevValue = prevValues.reduce((a, b) => a + b, 0) / prevValues.length;
+                    currValue = currValues.reduce((a, b) => a + b, 0) / currValues.length;
+                } else {
+                    prevValue = getMetricValue(prev.runId, filename, metric);
+                    currValue = getMetricValue(curr.runId, filename, metric);
+                }
+
+                const delta = prevValue > 0 ? ((currValue - prevValue) / prevValue * 100) : 0;
+                labels.push(`${prev.commit} → ${curr.commit}`);
+                data.push(delta);
+            }
+
+            const backgroundColors = data.map(d => d < 0 ? '#43e97b' : '#fa709a');
+
+            charts.delta = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Change (%)',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: '% Change'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const value = context.parsed.y;
+                                    return value < 0 ?
+                                        `Improvement: ${Math.abs(value).toFixed(2)}%` :
+                                        `Regression: +${value.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getMetricLabel(metric) {
+            const labels = {
+                parseTime: 'Parse Time (ms)',
+                throughput: 'Throughput (MB/s)',
+                heapAllocated: 'Heap Allocated (KB)',
+                allocCount: 'Allocation Count',
+                rssDelta: 'RSS Delta (KB)'
+            };
+            return labels[metric] || metric;
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            const errorDiv = document.getElementById('error');
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function exportData() {
+            const metric = document.getElementById('metric-select').value;
+            const filename = document.getElementById('file-select').value;
+            const selected = allRuns.filter(r => selectedRuns.has(r.runId));
+
+            let csv = 'RunID,Timestamp,Commit,Label,Value\n';
+            selected.forEach(run => {
+                const value = filename === 'all' ?
+                    (performanceData[run.runId]?.map(r => r.Filename).map(f =>
+                        getMetricValue(run.runId, f, metric)).reduce((a, b) => a + b, 0) /
+                        performanceData[run.runId]?.length || 0) :
+                    getMetricValue(run.runId, filename, metric);
+
+                csv += `${run.runId},${run.timestamp},${run.commit},"${run.label}",${value}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `benchmark-export-${Date.now()}.csv`;
+            a.click();
+        }
+
+        // Initialize on load
+        loadData();
+    </script>
+</body>
+</html>
