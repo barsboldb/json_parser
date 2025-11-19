@@ -43,8 +43,13 @@ typedef struct {
 } lexer_t;
 
 // util functions
-int is_digit(char);
-int is_space(char);
+static inline int is_digit(char ch) {
+  return ch >= '0' && ch <= '9';
+};
+static inline int is_space(char ch) {
+  return ch == ' ' || ch == '\n' || ch == '\t';
+};
+
 void skip_whitespace(lexer_t *);
 
 // String slice helper functions

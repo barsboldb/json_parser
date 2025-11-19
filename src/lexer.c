@@ -1,5 +1,6 @@
 #include "../include/lexer.h"
 
+__attribute__((cold))
 lexer_t lexer_init(const char *input) {
   size_t len = strlen(input);
   char *in_str = malloc(len + 1);
@@ -20,6 +21,7 @@ lexer_t lexer_init(const char *input) {
   return lexer;
 }
 
+__attribute__((cold))
 void lexer_free(lexer_t *lexer) {
   if (lexer->start) {
     free((char *)lexer->start);
@@ -67,10 +69,6 @@ double slice_to_double(string_slice_t slice) {
 void slice_print(string_slice_t slice) {
   printf("%.*s", (int)slice.length, slice.start);
 }
-
-// Helper function to check if character is a digit
-int is_space(char ch) { return ch == ' ' || ch == '\n' || ch == '\t'; }
-int is_digit(char ch) { return ch >= '0' && ch <= '9'; }
 
 // Helper function to skip whitespace
 void skip_whitespace(lexer_t *lexer) {
@@ -233,6 +231,7 @@ token_t tokenize_string(lexer_t *lexer) {
   return token;
 }
 
+__attribute__((cold))
 void token_free(token_t *token) {
 }
 
@@ -371,6 +370,7 @@ token_t peek_token(lexer_t *lexer) {
   return lexer->last_token;
 }
 
+__attribute__((cold))
 void print_token(token_t *token) {
   char *lexeme = slice_to_string(token->lexeme);
   switch (token->type) {

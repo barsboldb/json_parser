@@ -23,7 +23,20 @@ json_value_t parse_number(parser_t *);
 json_value_t parse_boolean(parser_t *);
 json_value_t parse_null(parser_t *);
 
-void advance(parser_t *);
-bool match(parser_t *, token_type_t);
-bool check(parser_t *, token_type_t);
+static inline void advance(parser_t *parser) {
+  if (!parser->has_error && parser->current_token.type != TOKEN_EOF) {
+    token_free(&parser->current_token);
+    parser->current_token = next_token(parser->lexer);
+  }
+}
+static inline bool check(parser_t *parser, token_type_t type) {
+  return parser->current_token.type == type;
+}
+static inline bool match(parser_t *parser, token_type_t type) {
+  if (check(parser, type)) {
+    advance(parser);
+    return true;
+  }
+  return false;
+}
 void parser_error(parser_t *, const char *);

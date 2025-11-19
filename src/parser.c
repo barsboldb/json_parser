@@ -10,30 +10,12 @@ void parser_free(parser_t *parser) {
   token_free(&parser->current_token);
 }
 
+__attribute__((cold))
 void parser_error(parser_t *parser, const char *msg) {
   parser->has_error = true;
   snprintf(parser->error_message, sizeof(parser->error_message),
            "Parse error at line %d, column %d: %s",
            parser->current_token.line, parser->current_token.column, msg);
-}
-
-void advance(parser_t *parser) {
-  if (!parser->has_error && parser->current_token.type != TOKEN_EOF) {
-    token_free(&parser->current_token);
-    parser->current_token = next_token(parser->lexer);
-  }
-}
-
-bool match(parser_t *parser, token_type_t type) {
-  if (check(parser, type)) {
-    advance(parser);
-    return true;
-  }
-  return false;
-}
-
-bool check(parser_t *parser, token_type_t type) {
-  return parser->current_token.type == type;
 }
 
 json_value_t parse_string(parser_t *parser) {
