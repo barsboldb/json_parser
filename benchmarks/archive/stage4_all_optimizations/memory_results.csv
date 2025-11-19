@@ -1,0 +1,10 @@
+Library,Filename,FileSize(KB),ParseTime(ms),HeapAllocated(KB),HeapFreed(KB),HeapPeak(KB),HeapLeaked(KB),AllocCount,FreeCount,OverheadRatio,RSS_Before(KB),RSS_After(KB),RSS_Delta(KB)
+json_parser,../samples/simple.json,0.06,0.0042,0,0,0,0,7,7,0.00,1296,1312,16
+json_parser,../samples/array.json,0.03,0.0022,0,0,0,0,4,4,0.00,1328,1328,0
+json_parser,../samples/nested.json,0.77,0.0081,3,3,3,0,67,67,3.90,1328,1328,0
+json_parser,../samples/complex.json,0.87,0.0090,4,4,4,0,72,72,4.59,1328,1344,16
+json_parser,../samples/edge_cases.json,0.55,0.0078,5,5,4,0,56,56,9.03,1344,1360,16
+json_parser,data/large_array.json,192.73,0.7581,832,832,768,0,14011,14011,4.32,1584,2656,1072
+json_parser,data/large_object.json,77.87,0.8511,496,496,457,0,6520,6520,6.37,2656,2704,48
+json_parser,data/deeply_nested.json,36.04,0.0571,76,76,76,0,607,607,2.11,2704,2720,16
+json_parser,data/real_world_api.json,247.09,0.7629,994,994,894,0,12269,12269,4.02,2720,3232,512
