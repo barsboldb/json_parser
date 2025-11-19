@@ -52,6 +52,53 @@ void tracked_free(void* ptr) {
   }
 }
 
+// Override realloc to track reallocations
+void* tracked_realloc(void* ptr, size_t size) {
+  if (!ptr) {
+    return tracked_malloc(size);
+  }
+
+  if (g_track_memory) {
+    // Get old size
+    void* real_ptr = (char*)ptr - sizeof(size_t);
+    size_t old_size = *(size_t*)real_ptr;
+
+    // Allocate new memory
+    void* new_ptr = realloc(real_ptr, size + sizeof(size_t));
+    if (!new_ptr) {
+      return NULL;
+    }
+
+    // Update stats
+    g_mem_stats.freed_bytes += old_size;
+    g_mem_stats.current_usage_bytes -= old_size;
+    g_mem_stats.allocated_bytes += size;
+    g_mem_stats.current_usage_bytes += size;
+    g_mem_stats.allocation_count++;
+
+    if (g_mem_stats.current_usage_bytes > g_mem_stats.peak_usage_bytes) {
+      g_mem_stats.peak_usage_bytes = g_mem_stats.current_usage_bytes;
+    }
+
+    *(size_t*)new_ptr = size;
+    return (char*)new_ptr + sizeof(size_t);
+  }
+
+  void* real_ptr = (char*)ptr - sizeof(size_t);
+  void* new_ptr = realloc(real_ptr, size + sizeof(size_t));
+  return new_ptr ? (char*)new_ptr + sizeof(size_t) : NULL;
+}
+
+// Override calloc to track allocations
+void* tracked_calloc(size_t nmemb, size_t size) {
+  size_t total_size = nmemb * size;
+  void* ptr = tracked_malloc(total_size);
+  if (ptr) {
+    memset(ptr, 0, total_size);
+  }
+  return ptr;
+}
+
 // Get process memory usage (RSS)
 long get_rss_kb() {
   struct rusage usage;
