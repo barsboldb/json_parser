@@ -24,7 +24,8 @@ mkdir -p results
 
 # 1. Compile our parser benchmark
 echo -e "${YELLOW}[1/3] Compiling json_parser benchmark...${NC}"
-gcc src/bench_our_parser.c ../src/*.c -I../include -o bin/bench_our_parser -O3 -Wall
+echo -e "${BLUE}Compiler flags: -O3 -flto -march=native -Wall${NC}"
+gcc src/bench_our_parser.c ../src/*.c -I../include -o bin/bench_our_parser -O3 -flto -march=native -Wall
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ Compilation successful${NC}"
 else

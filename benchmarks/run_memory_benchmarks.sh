@@ -24,7 +24,8 @@ mkdir -p results
 
 # 1. Compile memory benchmark
 echo -e "${YELLOW}[1/2] Compiling memory benchmark...${NC}"
-gcc src/bench_memory.c ../src/*.c -I../include -o bin/bench_memory -O3 -Wall
+echo -e "${BLUE}Compiler flags: -O3 -flto -march=native -Wall${NC}"
+gcc src/bench_memory.c ../src/*.c -I../include -o bin/bench_memory -O3 -flto -march=native -Wall
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}✓ Compilation successful${NC}"
 else

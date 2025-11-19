@@ -1,0 +1,10 @@
+Library,Filename,FileSize(KB),ParseTime(ms),HeapBefore(KB),HeapAfter(KB),HeapDelta(KB),HeapRetained(KB),OverheadRatio,RSS_Before(KB),RSS_After(KB),RSS_Delta(KB),RSS_AfterGC(KB)
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/samples/simple.json,0.06,0.0118,4013,4023,10,-1174,170.67,42560,42608,48,42688
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/samples/array.json,0.03,0.0044,3128,3132,4,-246,141.24,43072,43072,0,43072
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/samples/nested.json,0.77,0.0215,3942,3953,11,-1047,14.29,43248,43248,0,43248
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/samples/complex.json,0.87,0.0266,3145,3148,3,-236,3.44,43792,43808,16,43888
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/samples/edge_cases.json,0.55,0.0276,3594,3598,4,-685,7.22,43888,43888,0,43888
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/benchmarks/data/large_array.json,192.73,0.6035,4014,4243,229,-1102,1.19,45792,45792,0,45792
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/benchmarks/data/large_object.json,77.87,0.3883,3139,3286,147,-217,1.89,47120,47120,0,47120
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/benchmarks/data/deeply_nested.json,36.04,0.0770,3479,3494,15,-567,0.42,47152,47152,0,47152
+nodejs_json_parse,/Users/barsboldbayarerdene/Code/personal/c-lang/projects/json_parser/benchmarks/data/real_world_api.json,247.09,0.4463,3848,4080,232,-936,0.94,47760,47760,0,47856
