@@ -57,8 +57,17 @@ if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
   GIT_DIRTY=true
 fi
 
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-TIMESTAMP_DIR=$(date -u +"%Y-%m-%d_%H%M%S")
+# Use commit timestamp for clean commits, current time for dirty ones
+if [ "$GIT_DIRTY" = true ]; then
+  TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  TIMESTAMP_DIR=$(date -u +"%Y-%m-%d_%H%M%S")
+else
+  # Get commit timestamp (ISO 8601 format)
+  GIT_COMMIT_TIMESTAMP=$(git log -1 --format=%aI 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
+  TIMESTAMP="$GIT_COMMIT_TIMESTAMP"
+  # Convert to directory format: 2025-11-19T14:56:59+08:00 -> 2025-11-19_145659
+  TIMESTAMP_DIR=$(echo "$GIT_COMMIT_TIMESTAMP" | awk -F'[T:+Z-]' '{printf "%s-%s-%s_%s%s%s", $1, $2, $3, $4, $5, $6}')
+fi
 
 # Create run directory
 RUN_DIR="$HISTORY_DIR/${TIMESTAMP_DIR}_${GIT_COMMIT}"
