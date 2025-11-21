@@ -101,6 +101,20 @@ benchmark_stage() {
   FORCE_COMMIT_TIMESTAMP=1 ./scripts/run_benchmark.sh
   cd ..
 
+  # Update the backup to include the new benchmark results
+  echo -e "${CYAN}💾 Updating backup with new results...${NC}"
+  tar -czf "$TEMP_DIR/benchmarks_backup.tar.gz" benchmarks 2>/dev/null || {
+    echo -e "${RED}  Failed to update backup${NC}"
+    return 1
+  }
+  if [ -f "Makefile" ]; then
+    cp Makefile "$TEMP_DIR/Makefile.backup"
+  fi
+
+  # Clean up restored files before next checkout
+  echo -e "${CYAN}🧹 Cleaning up restored files...${NC}"
+  rm -rf benchmarks Makefile
+
   echo -e "${GREEN}  ✓ Benchmark completed for $stage_name${NC}"
 }
 
