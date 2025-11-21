@@ -1,7 +1,0 @@
-{
-  "generated": "2025-11-21T07:49:59Z",
-  "runs": [
-    {"runId": "2025-11-19_073852_e69edf2","timestamp": "2025-11-19T07:38:52Z","commit": "e69edf2","branch": "master","label": "implement missing tracked_realloc and tracked_calloc functions","message": "fix: implement missing tracked_realloc and tracked_calloc functions","hasPerformance": true,"hasMemory": true,"path": "history/2025-11-19_073852_e69edf2"},
-    {"runId": "2025-11-07_224227_0627152","timestamp": "2025-11-07T22:42:27+08:00","commit": "0627152","branch": "HEAD","label": "Add memory usage benchmarking for C and JavaScript parsers","message": "feat: Add memory usage benchmarking for C and JavaScript parsers","hasPerformance": false,"hasMemory": false,"path": "history/2025-11-07_224227_0627152"}
-  ]
-}
