@@ -74,17 +74,16 @@ benchmark_stage() {
   echo -e "${BLUE}========================================${NC}"
   echo ""
 
-  # Checkout the commit
+  # Checkout the commit (force to overwrite any local changes)
   echo -e "${CYAN}📦 Checking out commit $commit...${NC}"
-  git checkout "$commit" --quiet 2>/dev/null || {
+  git checkout --force "$commit" --quiet 2>/dev/null || {
     echo -e "${RED}  Failed to checkout commit${NC}"
     return 1
   }
   echo -e "${GREEN}  ✓ Checked out${NC}"
 
-  # Restore the modern benchmark system and Makefile
+  # Restore the modern benchmark system and Makefile ON TOP of the old commit
   echo -e "${CYAN}🔄 Restoring modern benchmark system...${NC}"
-  rm -rf benchmarks
   tar -xzf "$TEMP_DIR/benchmarks_backup.tar.gz" -C . 2>/dev/null || {
     echo -e "${RED}  Failed to restore benchmark system${NC}"
     return 1
@@ -111,9 +110,7 @@ benchmark_stage() {
     cp Makefile "$TEMP_DIR/Makefile.backup"
   fi
 
-  # Clean up restored files before next checkout
-  echo -e "${CYAN}🧹 Cleaning up restored files...${NC}"
-  rm -rf benchmarks Makefile
+  # Note: No manual cleanup needed - next git checkout --force will handle it
 
   echo -e "${GREEN}  ✓ Benchmark completed for $stage_name${NC}"
 }
@@ -133,10 +130,10 @@ echo ""
 
 if [ "$CURRENT_BRANCH" = "HEAD" ]; then
   echo -e "${CYAN}Returning to commit $CURRENT_COMMIT...${NC}"
-  git checkout "$CURRENT_COMMIT" --quiet
+  git checkout --force "$CURRENT_COMMIT" --quiet
 else
   echo -e "${CYAN}Returning to branch $CURRENT_BRANCH...${NC}"
-  git checkout "$CURRENT_BRANCH" --quiet
+  git checkout --force "$CURRENT_BRANCH" --quiet
 fi
 
 # Cleanup
