@@ -353,6 +353,7 @@
                 <button class="chart-tab" data-chart="commits">🔵 Commits</button>
                 <button class="chart-tab" data-chart="compare">📊 Compare</button>
                 <button class="chart-tab" data-chart="delta">🔺 Delta</button>
+                <button class="chart-tab" data-chart="journey">🚀 Journey</button>
             </div>
 
             <!-- Charts -->
@@ -381,6 +382,13 @@
                 <h2>Performance Delta (% Change)</h2>
                 <div class="chart-wrapper">
                     <canvas id="delta-chart"></canvas>
+                </div>
+            </div>
+
+            <div id="chart-journey" class="chart-container">
+                <h2>Optimization Journey by File</h2>
+                <div class="chart-wrapper">
+                    <canvas id="journey-chart"></canvas>
                 </div>
             </div>
         </div>
@@ -566,6 +574,7 @@
             updateCommitsChart(selected, metric, filename);
             updateCompareChart(selected, metric, filename);
             updateDeltaChart(selected, metric, filename);
+            updateJourneyChart(selected, metric);
         }
 
         function updateTimelineChart(runs, metric, filename) {
@@ -827,6 +836,86 @@
                                         `Improvement: ${Math.abs(value).toFixed(2)}%` :
                                         `Regression: +${value.toFixed(2)}%`;
                                 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateJourneyChart(runs, metric) {
+            const ctx = document.getElementById('journey-chart');
+
+            if (charts.journey) {
+                charts.journey.destroy();
+            }
+
+            if (runs.length === 0) {
+                return;
+            }
+
+            // Get all unique test files from the first run
+            const firstRun = runs.find(r => performanceData[r.runId]);
+            if (!firstRun || !performanceData[firstRun.runId]) {
+                return;
+            }
+
+            const files = performanceData[firstRun.runId].map(row => row.Filename || row.filename);
+            const fileLabels = files.map(f => f.split('/').pop().replace('.json', ''));
+
+            // Create dataset for each run
+            const datasets = runs.map((run, index) => {
+                const data = files.map(file => {
+                    return getMetricValue(run.runId, file, metric);
+                });
+
+                return {
+                    label: run.label,
+                    data: data,
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '33',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                };
+            });
+
+            charts.journey = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: fileLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} ${getMetricLabel(metric)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: getMetricLabel(metric)
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Test Files'
                             }
                         }
                     }
