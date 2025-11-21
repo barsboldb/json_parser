@@ -47,7 +47,7 @@ if ! git diff-index --quiet HEAD --; then
   exit 1
 fi
 
-# Save the current benchmark system
+# Save the current benchmark system and Makefile
 echo -e "${CYAN}💾 Saving current benchmark system...${NC}"
 mkdir -p "$TEMP_DIR"
 # Use tar to preserve symlinks and handle edge cases
@@ -55,6 +55,10 @@ tar -czf "$TEMP_DIR/benchmarks_backup.tar.gz" benchmarks 2>/dev/null || {
   echo -e "${RED}Failed to backup benchmark system${NC}"
   exit 1
 }
+# Also save the Makefile (needed for build-benchmarks target)
+if [ -f "Makefile" ]; then
+  cp Makefile "$TEMP_DIR/Makefile.backup"
+fi
 echo -e "${GREEN}  ✓ Benchmark system saved${NC}"
 echo ""
 
@@ -78,13 +82,17 @@ benchmark_stage() {
   }
   echo -e "${GREEN}  ✓ Checked out${NC}"
 
-  # Restore the modern benchmark system
+  # Restore the modern benchmark system and Makefile
   echo -e "${CYAN}🔄 Restoring modern benchmark system...${NC}"
   rm -rf benchmarks
   tar -xzf "$TEMP_DIR/benchmarks_backup.tar.gz" -C . 2>/dev/null || {
     echo -e "${RED}  Failed to restore benchmark system${NC}"
     return 1
   }
+  # Restore Makefile if it was backed up
+  if [ -f "$TEMP_DIR/Makefile.backup" ]; then
+    cp "$TEMP_DIR/Makefile.backup" Makefile
+  fi
   echo -e "${GREEN}  ✓ Benchmark system restored${NC}"
 
   # Run the benchmark with forced commit timestamp
