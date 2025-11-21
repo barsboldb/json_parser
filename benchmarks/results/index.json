@@ -1,10 +1,7 @@
 {
-  "generated": "2025-11-19T07:11:04Z",
+  "generated": "2025-11-21T07:33:07Z",
   "runs": [
-    {"runId": "2025-11-19_071102_daf570c","timestamp": "2025-11-19T07:11:02Z","commit": "daf570c","branch": "master","label": "remove outdated documentation and archive directories","message": "chore: remove outdated documentation and archive directories","hasPerformance": true,"hasMemory": false,"path": "history/2025-11-19_071102_daf570c"},
-    {"runId": "2025-11-19_071100_daf570c","timestamp": "2025-11-19T07:11:00Z","commit": "daf570c","branch": "master","label": "remove outdated documentation and archive directories","message": "chore: remove outdated documentation and archive directories","hasPerformance": true,"hasMemory": false,"path": "history/2025-11-19_071100_daf570c"},
-    {"runId": "2025-11-19_071059_a6827b5","timestamp": "2025-11-19T07:10:59Z","commit": "a6827b5","branch": "master","label": "Implement zero-copy string slices for lexer tokens (benchmark of 91f097f)","message": "refactor: Implement zero-copy string slices for lexer tokens (benchmark of 91f097f)","hasPerformance": true,"hasMemory": false,"path": "history/2025-11-19_071059_a6827b5"},
-    {"runId": "2025-11-19_071056_70f1048","timestamp": "2025-11-19T07:10:56Z","commit": "70f1048","branch": "master","label": "Add memory usage benchmarking for C and JavaScript parsers (benchmark of 0627152)","message": "feat: Add memory usage benchmarking for C and JavaScript parsers (benchmark of 0627152)","hasPerformance": true,"hasMemory": false,"path": "history/2025-11-19_071056_70f1048"},
-    {"runId": "2025-11-19_030217_0983838","timestamp": "2025-11-19T03:02:17Z","commit": "0983838","branch": "master","label": "Add enhanced compiler flags and benchmark inlining optimization","message": "perf: Add enhanced compiler flags and benchmark inlining optimization","hasPerformance": true,"hasMemory": false,"path": "history/2025-11-19_030217_0983838"}
+    {"runId": "2025-11-19_073852_e69edf2","timestamp": "2025-11-19T07:38:52Z","commit": "e69edf2","branch": "master","label": "implement missing tracked_realloc and tracked_calloc functions","message": "fix: implement missing tracked_realloc and tracked_calloc functions","hasPerformance": true,"hasMemory": true,"path": "history/2025-11-19_073852_e69edf2"},
+    {"runId": "2025-11-07_224227_0627152","timestamp": "2025-11-07T22:42:27+08:00","commit": "0627152","branch": "HEAD","label": "Add memory usage benchmarking for C and JavaScript parsers","message": "feat: Add memory usage benchmarking for C and JavaScript parsers","hasPerformance": false,"hasMemory": false,"path": "history/2025-11-07_224227_0627152"}
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-11-07T22:42:27+08:00",
+  "runId": "2025-11-07_224227_0627152",
+  "git": {
+    "commit": "0627152",
+    "commitFull": "062715271613f632706c5e6052667ae5e648f076",
+    "message": "feat: Add memory usage benchmarking for C and JavaScript parsers",
+    "branch": "HEAD",
+    "isDirty": true
+  },
+  "build": {
+    "compiler": "Apple clang version 17.0.0 (clang-1700.4.4.1)",
+    "flags": "-O3 -flto -march=native -DNDEBUG",
+    "platform": "Darwin"
+  },
+  "label": "Add memory usage benchmarking for C and JavaScript parsers"
+}
