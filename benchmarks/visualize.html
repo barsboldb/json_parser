@@ -906,8 +906,8 @@
                 const evolutionColors = [
                     'rgba(239, 68, 68, 1)',      // red - baseline
                     'rgba(251, 191, 36, 1)',     // yellow - middle
-                    'rgba(34, 197, 94, 1)',      // green - better
-                    'rgba(16, 185, 129, 1)'      // teal - best
+                    'rgba(16, 185, 129, 1)',     // green - better
+                    'rgba(16, 185, 129, 1)'      // green - best
                 ];
 
                 return {
@@ -1128,58 +1128,93 @@
             const files = memoryData[firstRun.runId].map(row => row.Filename || row.filename);
             const fileLabels = files.map(f => f.split('/').pop().replace('.json', ''));
 
-            // Get baseline (first/oldest) and current (last/newest)
+            // Sort runs by timestamp to show evolution
             const sortedRuns = [...runs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            const baselineRun = sortedRuns[0];
-            const currentRun = sortedRuns[sortedRuns.length - 1];
 
-            const beforeAllocs = files.map(file => {
-                return getMetricValue(baselineRun.runId, file, 'allocCount');
-            });
+            // Check if we have any non-zero allocation data
+            let hasAllocData = false;
+            for (const run of sortedRuns) {
+                for (const file of files) {
+                    const allocCount = getMetricValue(run.runId, file, 'allocCount');
+                    if (allocCount > 0) {
+                        hasAllocData = true;
+                        break;
+                    }
+                }
+                if (hasAllocData) break;
+            }
 
-            const afterAllocs = files.map(file => {
-                return getMetricValue(currentRun.runId, file, 'allocCount');
+            // Create dataset for each run with evolution colors
+            const datasets = sortedRuns.map((run, index) => {
+                const data = files.map(file => {
+                    return getMetricValue(run.runId, file, 'allocCount');
+                });
+
+                // Color scheme: red (baseline) -> yellow -> green (current)
+                const evolutionColors = [
+                    'rgba(239, 68, 68, 1)',      // red - baseline
+                    'rgba(251, 191, 36, 1)',     // yellow - middle
+                    'rgba(16, 185, 129, 1)',     // green - better
+                    'rgba(16, 185, 129, 1)'      // green - best
+                ];
+
+                return {
+                    label: run.label,
+                    data: data,
+                    borderColor: evolutionColors[index % evolutionColors.length],
+                    backgroundColor: evolutionColors[index % evolutionColors.length] + '22',
+                    borderWidth: index === sortedRuns.length - 1 ? 4 : 3,
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: index === sortedRuns.length - 1 ? 7 : 6,
+                    pointHoverRadius: index === sortedRuns.length - 1 ? 9 : 8
+                };
             });
 
             charts.allocations = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: fileLabels,
-                    datasets: [
-                        {
-                            label: `Before (${baselineRun.label})`,
-                            data: beforeAllocs,
-                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 2
-                        },
-                        {
-                            label: `After (${currentRun.label})`,
-                            data: afterAllocs,
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 2
-                        }
-                    ]
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top'
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
                         },
                         tooltip: {
+                            mode: 'index',
+                            intersect: false,
                             callbacks: {
                                 label: (context) => {
                                     const val = context.parsed.y;
-                                    if (val === 0) {
-                                        return `${context.dataset.label}: 0 🎉 (All eliminated!)`;
+                                    if (!hasAllocData) {
+                                        return `${context.dataset.label}: ${val} ⚠️ (tracking disabled)`;
                                     }
-                                    return `${context.dataset.label}: ${val} allocations`;
+                                    if (val === 0) {
+                                        return `${context.dataset.label}: 0 (eliminated)`;
+                                    }
+                                    return `${context.dataset.label}: ${val.toLocaleString()} allocations`;
                                 }
                             }
-                        }
+                        },
+                        subtitle: !hasAllocData ? {
+                            display: true,
+                            text: '⚠️ Allocation tracking needs rebuild - run "make build-benchmarks" and re-benchmark',
+                            color: '#f59e0b',
+                            font: {
+                                size: 12
+                            },
+                            padding: {
+                                bottom: 10
+                            }
+                        } : undefined
                     },
                     scales: {
                         y: {
@@ -1187,8 +1222,23 @@
                             title: {
                                 display: true,
                                 text: 'Allocation Count'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Test File'
                             }
                         }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
                     }
                 }
             });

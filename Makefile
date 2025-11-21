@@ -213,7 +213,7 @@ $(BENCH_DIR)/bin/bench_memory: $(BENCH_DIR)/src/bench_memory.c $(LIB_SOURCES) $(
 	@echo "$(YELLOW)Building memory benchmark with tracked allocations...$(NC)"
 	@mkdir -p $(BENCH_DIR)/bin
 	@mkdir -p $(BENCH_DIR)/include
-	$(CC) $(CFLAGS_RELEASE) $< -include $(BENCH_DIR)/include/mem_track.h \
+	$(CC) $(CFLAGS_RELEASE) $< -DBENCHMARK_MEMORY_TRACKING \
 		$(LIB_SOURCES) -I$(INC_DIR) -I$(BENCH_DIR)/include -o $@ $(LDFLAGS_RELEASE)
 
 # Build benchmarks

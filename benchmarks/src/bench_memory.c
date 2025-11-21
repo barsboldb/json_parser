@@ -20,9 +20,21 @@ typedef struct {
 memory_stats_t g_mem_stats = {0};
 int g_track_memory = 0;
 
+// Save the real function pointers before they get redefined
+#undef malloc
+#undef free
+#undef realloc
+#undef calloc
+
+// Now we can use the real stdlib functions in our tracking wrappers
+#define REAL_MALLOC malloc
+#define REAL_FREE free
+#define REAL_REALLOC realloc
+#define REAL_CALLOC calloc
+
 // Override malloc to track allocations
 void* tracked_malloc(size_t size) {
-  void* ptr = malloc(size + sizeof(size_t));
+  void* ptr = REAL_MALLOC(size + sizeof(size_t));
   if (ptr && g_track_memory) {
     *(size_t*)ptr = size;
     g_mem_stats.allocated_bytes += size;
@@ -46,9 +58,9 @@ void tracked_free(void* ptr) {
     g_mem_stats.freed_bytes += size;
     g_mem_stats.current_usage_bytes -= size;
     g_mem_stats.free_count++;
-    free(real_ptr);
+    REAL_FREE(real_ptr);
   } else if (ptr) {
-    free((char*)ptr - sizeof(size_t));
+    REAL_FREE((char*)ptr - sizeof(size_t));
   }
 }
 
@@ -64,7 +76,7 @@ void* tracked_realloc(void* ptr, size_t size) {
     size_t old_size = *(size_t*)real_ptr;
 
     // Allocate new memory
-    void* new_ptr = realloc(real_ptr, size + sizeof(size_t));
+    void* new_ptr = REAL_REALLOC(real_ptr, size + sizeof(size_t));
     if (!new_ptr) {
       return NULL;
     }
@@ -85,7 +97,7 @@ void* tracked_realloc(void* ptr, size_t size) {
   }
 
   void* real_ptr = (char*)ptr - sizeof(size_t);
-  void* new_ptr = realloc(real_ptr, size + sizeof(size_t));
+  void* new_ptr = REAL_REALLOC(real_ptr, size + sizeof(size_t));
   return new_ptr ? (char*)new_ptr + sizeof(size_t) : NULL;
 }
 

@@ -1,4 +1,7 @@
 #include <stdio.h>
+#ifdef BENCHMARK_MEMORY_TRACKING
+#include "../benchmarks/include/mem_track.h"
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
