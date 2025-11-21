@@ -16,12 +16,12 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Optimization stages (commits AFTER 460f39f API change)
-# Note: 460f39f is the baseline but NOT benchmarked (it has API-breaking changes)
+# Optimization stages (using bd84d9f as baseline)
 declare -a STAGES=(
-  "91f097f:Stage 1 - Zero-Copy String Slices"
-  "5886c3d:Stage 2 - Function Inlining Optimization"
-  "HEAD:Stage 3 - Current (All Optimizations)"
+  "bd84d9f:Stage 1 - Baseline (Before Optimizations)"
+  "91f097f:Stage 2 - Zero-Copy String Slices"
+  "5886c3d:Stage 3 - Function Inlining Optimization"
+  "HEAD:Stage 4 - Current (All Optimizations)"
 )
 
 TEMP_DIR="$SCRIPT_DIR/.benchmark_temp"
