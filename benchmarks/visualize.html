@@ -423,6 +423,7 @@
         let allRuns = [];
         let performanceData = {};
         let memoryData = {};
+        let nodejsData = null;
         let selectedRuns = new Set();
         let charts = {};
 
@@ -460,6 +461,14 @@
                         memoryData[run.runId] = memData;
                     }
                 }));
+
+                // Load Node.js benchmark data
+                try {
+                    nodejsData = await loadCSV('results/nodejs_results.csv');
+                    console.log('✓ Node.js benchmark data loaded');
+                } catch (e) {
+                    console.warn('Node.js benchmark data not available');
+                }
 
                 // Select all runs by default
                 selectedRuns = new Set(allRuns.map(r => r.runId));
@@ -1000,6 +1009,34 @@
                 };
             });
 
+            // Add Node.js reference line if available and metric is throughput
+            if (nodejsData && (metric === 'throughput' || metric === 'parseTime')) {
+                const nodejsValues = files.map(file => {
+                    const row = nodejsData.find(r => r.Filename && r.Filename.includes(file.split('/').pop()));
+                    if (!row) return null;
+
+                    if (metric === 'throughput') {
+                        return parseFloat(row['Throughput(MB/s)'] || row.Throughput || 0);
+                    } else if (metric === 'parseTime') {
+                        return parseFloat(row['AvgTime(ms)'] || row.AvgTime || 0);
+                    }
+                    return null;
+                });
+
+                datasets.push({
+                    label: 'Node.js V8 (Reference)',
+                    data: nodejsValues,
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                });
+            }
+
             charts.evolution = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1064,20 +1101,34 @@
             // Use the most recent (best) run
             const bestRun = runs[0];
 
-            // Calculate percentage for each file
-            // Note: This is a placeholder - you'd need actual Node.js benchmark data
-            // For now, showing relative performance (100% = baseline)
-            const baselineRun = runs.length > 1 ? runs[runs.length - 1] : runs[0];
-
+            // Calculate percentage vs Node.js for each file
             const percentages = files.map((file, i) => {
                 const currentValue = getMetricValue(bestRun.runId, file, metric);
+
+                // If Node.js data available, compare against it
+                if (nodejsData) {
+                    const nodejsRow = nodejsData.find(r => r.Filename && r.Filename.includes(file.split('/').pop()));
+                    if (nodejsRow) {
+                        let nodejsValue;
+                        if (metric === 'parseTime') {
+                            nodejsValue = parseFloat(nodejsRow['AvgTime(ms)'] || nodejsRow.AvgTime || 0);
+                            // Lower is better, so inverse the calculation
+                            return nodejsValue > 0 ? ((nodejsValue / currentValue) * 100).toFixed(1) : 100;
+                        } else if (metric === 'throughput') {
+                            nodejsValue = parseFloat(nodejsRow['Throughput(MB/s)'] || nodejsRow.Throughput || 0);
+                            // Higher is better
+                            return nodejsValue > 0 ? ((currentValue / nodejsValue) * 100).toFixed(1) : 100;
+                        }
+                    }
+                }
+
+                // Fallback: compare vs baseline if no Node.js data
+                const baselineRun = runs.length > 1 ? runs[runs.length - 1] : runs[0];
                 const baselineValue = getMetricValue(baselineRun.runId, file, metric);
 
                 if (metric === 'parseTime') {
-                    // Lower is better, so inverse the calculation
                     return baselineValue > 0 ? ((baselineValue / currentValue) * 100).toFixed(1) : 100;
                 } else {
-                    // Higher is better
                     return baselineValue > 0 ? ((currentValue / baselineValue) * 100).toFixed(1) : 100;
                 }
             });
@@ -1096,12 +1147,14 @@
                 'rgba(239, 68, 68, 1)'
             );
 
+            const vsLabel = nodejsData ? '% of Node.js V8 Performance' : '% of Baseline Performance';
+
             charts.vsnode = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: fileLabels,
                     datasets: [{
-                        label: '% of Baseline Performance',
+                        label: vsLabel,
                         data: percentages,
                         backgroundColor: backgroundColors,
                         borderColor: borderColors,
@@ -1123,7 +1176,8 @@
                                                  val >= 150 ? '🚀 1.5x+ Better' :
                                                  val >= 100 ? '✅ Better' :
                                                  '📊 Gap';
-                                    return `${status}: ${val}% of baseline`;
+                                    const vsWhat = nodejsData ? 'Node.js V8' : 'baseline';
+                                    return `${status}: ${val}% of ${vsWhat}`;
                                 }
                             }
                         }
@@ -1133,7 +1187,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '% Performance vs Baseline'
+                                text: vsLabel
                             },
                             ticks: {
                                 callback: function(value) {
