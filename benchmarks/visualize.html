@@ -354,7 +354,6 @@
                 <button class="chart-tab" data-chart="compare">📊 Compare</button>
                 <button class="chart-tab" data-chart="delta">🔺 Delta</button>
                 <button class="chart-tab" data-chart="journey">🚀 Journey</button>
-                <button class="chart-tab" data-chart="evolution">🎯 Evolution</button>
                 <button class="chart-tab" data-chart="vsnode">⚡ vs Node.js</button>
                 <button class="chart-tab" data-chart="allocations">💾 Allocations</button>
             </div>
@@ -389,16 +388,9 @@
             </div>
 
             <div id="chart-journey" class="chart-container">
-                <h2>Optimization Journey by File</h2>
+                <h2>🚀 Optimization Journey: Performance Evolution</h2>
                 <div class="chart-wrapper">
                     <canvas id="journey-chart"></canvas>
-                </div>
-            </div>
-
-            <div id="chart-evolution" class="chart-container">
-                <h2>🚀 Optimization Journey: Three-Stage Performance Evolution</h2>
-                <div class="chart-wrapper">
-                    <canvas id="evolution-chart"></canvas>
                 </div>
             </div>
 
@@ -607,8 +599,7 @@
             updateCommitsChart(selected, metric, filename);
             updateCompareChart(selected, metric, filename);
             updateDeltaChart(selected, metric, filename);
-            updateJourneyChart(selected, metric);
-            updateEvolutionChart(selected, metric);
+            updateJourneyChart(selected);
             updateVsNodeChart(selected, metric);
             updateAllocationsChart(selected);
         }
@@ -879,7 +870,7 @@
             });
         }
 
-        function updateJourneyChart(runs, metric) {
+        function updateJourneyChart(runs) {
             const ctx = document.getElementById('journey-chart');
 
             if (charts.journey) {
@@ -890,87 +881,10 @@
                 return;
             }
 
+            // Always use throughput metric for Journey chart
+            const metric = 'throughput';
+
             // Get all unique test files from the first run
-            const firstRun = runs.find(r => performanceData[r.runId]);
-            if (!firstRun || !performanceData[firstRun.runId]) {
-                return;
-            }
-
-            const files = performanceData[firstRun.runId].map(row => row.Filename || row.filename);
-            const fileLabels = files.map(f => f.split('/').pop().replace('.json', ''));
-
-            // Create dataset for each run
-            const datasets = runs.map((run, index) => {
-                const data = files.map(file => {
-                    return getMetricValue(run.runId, file, metric);
-                });
-
-                return {
-                    label: run.label,
-                    data: data,
-                    borderColor: colors[index % colors.length],
-                    backgroundColor: colors[index % colors.length] + '33',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: false,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                };
-            });
-
-            charts.journey = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: fileLabels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} ${getMetricLabel(metric)}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: getMetricLabel(metric)
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Test Files'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateEvolutionChart(runs, metric) {
-            const ctx = document.getElementById('evolution-chart');
-
-            if (charts.evolution) {
-                charts.evolution.destroy();
-            }
-
-            if (runs.length === 0) {
-                return;
-            }
-
-            // Get all unique test files
             const firstRun = runs.find(r => performanceData[r.runId]);
             if (!firstRun || !performanceData[firstRun.runId]) {
                 return;
@@ -1009,18 +923,12 @@
                 };
             });
 
-            // Add Node.js reference line if available and metric is throughput
-            if (nodejsData && (metric === 'throughput' || metric === 'parseTime')) {
+            // Add Node.js reference line
+            if (nodejsData) {
                 const nodejsValues = files.map(file => {
                     const row = nodejsData.find(r => r.Filename && r.Filename.includes(file.split('/').pop()));
                     if (!row) return null;
-
-                    if (metric === 'throughput') {
-                        return parseFloat(row['Throughput(MB/s)'] || row.Throughput || 0);
-                    } else if (metric === 'parseTime') {
-                        return parseFloat(row['AvgTime(ms)'] || row.AvgTime || 0);
-                    }
-                    return null;
+                    return parseFloat(row['Throughput(MB/s)'] || row.Throughput || 0);
                 });
 
                 datasets.push({
@@ -1037,7 +945,7 @@
                 });
             }
 
-            charts.evolution = new Chart(ctx, {
+            charts.journey = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: fileLabels,
@@ -1054,7 +962,7 @@
                         tooltip: {
                             callbacks: {
                                 label: (context) => {
-                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} ${getMetricUnit(metric)}`;
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} MB/s`;
                                 }
                             }
                         }
@@ -1064,7 +972,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: getMetricLabel(metric)
+                                text: 'Throughput (MB/s)'
                             }
                         },
                         x: {
