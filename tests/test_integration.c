@@ -44,7 +44,7 @@ void test_simple_json() {
   json_value_t value = parse(&parser);
   TEST_ASSERT(!parser.has_error, "Should parse without errors");
   TEST_ASSERT(value.type == JSON_OBJECT, "Root should be object");
-  TEST_ASSERT(value.object.len == 3, "Object should have 3 entries");
+  TEST_ASSERT(json_object_size(&value) == 3, "Object should have 3 entries");
 
   // Check "name" field
   json_value_t name = json_object_get(&value, "name");
@@ -295,7 +295,7 @@ void test_edge_cases_json() {
 
   json_value_t empty_object = json_object_get(&value, "empty_object");
   TEST_ASSERT(empty_object.type == JSON_OBJECT, "empty_object should be object");
-  TEST_ASSERT(empty_object.object.len == 0, "empty_object should have 0 entries");
+  TEST_ASSERT(json_object_size(&empty_object) == 0, "empty_object should have 0 entries");
 
   // Check nested empty
   json_value_t nested_empty = json_object_get(&value, "nested_empty");
@@ -307,7 +307,7 @@ void test_edge_cases_json() {
 
   json_value_t nested_obj = json_object_get(&nested_empty, "obj");
   TEST_ASSERT(nested_obj.type == JSON_OBJECT, "nested obj should be object");
-  TEST_ASSERT(nested_obj.object.len == 0, "nested obj should be empty");
+  TEST_ASSERT(json_object_size(&nested_obj) == 0, "nested obj should be empty");
 
   // Check numbers
   json_value_t numbers = json_object_get(&value, "numbers");

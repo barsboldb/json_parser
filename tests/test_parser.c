@@ -441,7 +441,7 @@ void test_parse_object() {
 
   json_value_t value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Empty object should have JSON_OBJECT type");
-  TEST_ASSERT(value.object.len == 0, "Empty object should have length 0");
+  TEST_ASSERT(json_object_size(&value) == 0, "Empty object should have length 0");
   TEST_ASSERT(!parser.has_error, "Should not have error for empty object");
 
   json_value_free(&value);
@@ -454,10 +454,10 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object type");
-  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
-  TEST_ASSERT(strcmp(value.object.entries[0].key, "name") == 0, "Key should be 'name'");
-  TEST_ASSERT(value.object.entries[0].value.type == JSON_STRING, "Value should be string");
-  TEST_ASSERT(strcmp(value.object.entries[0].value.string, "John") == 0, "String value should be 'John'");
+  TEST_ASSERT(json_object_size(&value) == 1, "Object should have 1 entry");
+  json_value_t name_val = json_object_get(&value, "name");
+  TEST_ASSERT(name_val.type == JSON_STRING, "Value should be string");
+  TEST_ASSERT(strcmp(name_val.string, "John") == 0, "String value should be 'John'");
   TEST_ASSERT(!parser.has_error, "Should not have error");
 
   json_value_free(&value);
@@ -470,10 +470,10 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with number");
-  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
-  TEST_ASSERT(strcmp(value.object.entries[0].key, "age") == 0, "Key should be 'age'");
-  TEST_ASSERT(value.object.entries[0].value.type == JSON_NUMBER, "Value should be number");
-  TEST_ASSERT(value.object.entries[0].value.number == 30.0, "Number value should be 30");
+  TEST_ASSERT(json_object_size(&value) == 1, "Object should have 1 entry");
+  json_value_t age_val = json_object_get(&value, "age");
+  TEST_ASSERT(age_val.type == JSON_NUMBER, "Value should be number");
+  TEST_ASSERT(age_val.number == 30.0, "Number value should be 30");
 
   json_value_free(&value);
   lexer_free(&lexer);
@@ -485,19 +485,19 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with multiple entries");
-  TEST_ASSERT(value.object.len == 3, "Object should have 3 entries");
+  TEST_ASSERT(json_object_size(&value) == 3, "Object should have 3 entries");
 
-  TEST_ASSERT(strcmp(value.object.entries[0].key, "name") == 0, "First key should be 'name'");
-  TEST_ASSERT(value.object.entries[0].value.type == JSON_STRING, "First value should be string");
-  TEST_ASSERT(strcmp(value.object.entries[0].value.string, "Alice") == 0, "First value should be 'Alice'");
+  json_value_t v_name = json_object_get(&value, "name");
+  TEST_ASSERT(v_name.type == JSON_STRING, "name value should be string");
+  TEST_ASSERT(strcmp(v_name.string, "Alice") == 0, "name value should be 'Alice'");
 
-  TEST_ASSERT(strcmp(value.object.entries[1].key, "age") == 0, "Second key should be 'age'");
-  TEST_ASSERT(value.object.entries[1].value.type == JSON_NUMBER, "Second value should be number");
-  TEST_ASSERT(value.object.entries[1].value.number == 25.0, "Second value should be 25");
+  json_value_t v_age = json_object_get(&value, "age");
+  TEST_ASSERT(v_age.type == JSON_NUMBER, "age value should be number");
+  TEST_ASSERT(v_age.number == 25.0, "age value should be 25");
 
-  TEST_ASSERT(strcmp(value.object.entries[2].key, "active") == 0, "Third key should be 'active'");
-  TEST_ASSERT(value.object.entries[2].value.type == JSON_BOOL, "Third value should be boolean");
-  TEST_ASSERT(value.object.entries[2].value.boolean == true, "Third value should be true");
+  json_value_t v_active = json_object_get(&value, "active");
+  TEST_ASSERT(v_active.type == JSON_BOOL, "active value should be boolean");
+  TEST_ASSERT(v_active.boolean == true, "active value should be true");
 
   json_value_free(&value);
   lexer_free(&lexer);
@@ -509,11 +509,11 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with mixed types");
-  TEST_ASSERT(value.object.len == 4, "Object should have 4 entries");
-  TEST_ASSERT(value.object.entries[0].value.type == JSON_STRING, "First value type correct");
-  TEST_ASSERT(value.object.entries[1].value.type == JSON_NUMBER, "Second value type correct");
-  TEST_ASSERT(value.object.entries[2].value.type == JSON_BOOL, "Third value type correct");
-  TEST_ASSERT(value.object.entries[3].value.type == JSON_NULL, "Fourth value type correct");
+  TEST_ASSERT(json_object_size(&value) == 4, "Object should have 4 entries");
+  TEST_ASSERT(json_object_get(&value, "str").type == JSON_STRING, "str value type correct");
+  TEST_ASSERT(json_object_get(&value, "num").type == JSON_NUMBER, "num value type correct");
+  TEST_ASSERT(json_object_get(&value, "bool").type == JSON_BOOL, "bool value type correct");
+  TEST_ASSERT(json_object_get(&value, "null").type == JSON_NULL, "null value type correct");
 
   json_value_free(&value);
   lexer_free(&lexer);
@@ -525,10 +525,10 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should parse object with array value");
-  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
-  TEST_ASSERT(strcmp(value.object.entries[0].key, "numbers") == 0, "Key should be 'numbers'");
-  TEST_ASSERT(value.object.entries[0].value.type == JSON_ARRAY, "Value should be array");
-  TEST_ASSERT(value.object.entries[0].value.array.len == 3, "Array should have 3 elements");
+  TEST_ASSERT(json_object_size(&value) == 1, "Object should have 1 entry");
+  json_value_t numbers = json_object_get(&value, "numbers");
+  TEST_ASSERT(numbers.type == JSON_ARRAY, "Value should be array");
+  TEST_ASSERT(numbers.array.len == 3, "Array should have 3 elements");
 
   json_value_free(&value);
   lexer_free(&lexer);
@@ -540,12 +540,12 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should parse nested object");
-  TEST_ASSERT(value.object.len == 1, "Outer object should have 1 entry");
-  TEST_ASSERT(strcmp(value.object.entries[0].key, "person") == 0, "Key should be 'person'");
-  TEST_ASSERT(value.object.entries[0].value.type == JSON_OBJECT, "Value should be object");
-  TEST_ASSERT(value.object.entries[0].value.object.len == 2, "Nested object should have 2 entries");
-  TEST_ASSERT(strcmp(value.object.entries[0].value.object.entries[0].key, "name") == 0, "Nested key should be 'name'");
-  TEST_ASSERT(strcmp(value.object.entries[0].value.object.entries[0].value.string, "Bob") == 0, "Nested value should be 'Bob'");
+  TEST_ASSERT(json_object_size(&value) == 1, "Outer object should have 1 entry");
+  json_value_t person = json_object_get(&value, "person");
+  TEST_ASSERT(person.type == JSON_OBJECT, "Value should be object");
+  TEST_ASSERT(json_object_size(&person) == 2, "Nested object should have 2 entries");
+  json_value_t nested_name = json_object_get(&person, "name");
+  TEST_ASSERT(strcmp(nested_name.string, "Bob") == 0, "Nested value should be 'Bob'");
 
   json_value_free(&value);
   lexer_free(&lexer);
@@ -557,8 +557,8 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should handle whitespace in object");
-  TEST_ASSERT(value.object.len == 1, "Object with whitespace should have 1 entry");
-  TEST_ASSERT(strcmp(value.object.entries[0].key, "key") == 0, "Key should be correct with whitespace");
+  TEST_ASSERT(json_object_size(&value) == 1, "Object with whitespace should have 1 entry");
+  TEST_ASSERT(json_object_get(&value, "key").type == JSON_STRING, "Key should exist with whitespace");
 
   json_value_free(&value);
   lexer_free(&lexer);
@@ -570,11 +570,12 @@ void test_parse_object() {
 
   value = parse_object(&parser);
   TEST_ASSERT(value.type == JSON_OBJECT, "Should parse complex nested structure");
-  TEST_ASSERT(value.object.len == 1, "Object should have 1 entry");
-  TEST_ASSERT(value.object.entries[0].value.type == JSON_ARRAY, "Value should be array");
-  TEST_ASSERT(value.object.entries[0].value.array.len == 2, "Array should have 2 elements");
-  TEST_ASSERT(value.object.entries[0].value.array.items[0].type == JSON_OBJECT, "Array element should be object");
-  TEST_ASSERT(value.object.entries[0].value.array.items[0].object.len == 1, "First object should have 1 entry");
+  TEST_ASSERT(json_object_size(&value) == 1, "Object should have 1 entry");
+  json_value_t users = json_object_get(&value, "users");
+  TEST_ASSERT(users.type == JSON_ARRAY, "Value should be array");
+  TEST_ASSERT(users.array.len == 2, "Array should have 2 elements");
+  TEST_ASSERT(users.array.items[0].type == JSON_OBJECT, "Array element should be object");
+  TEST_ASSERT(json_object_size(&users.array.items[0]) == 1, "First object should have 1 entry");
 
   json_value_free(&value);
   lexer_free(&lexer);

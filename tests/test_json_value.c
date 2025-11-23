@@ -174,25 +174,39 @@ void test_json_value_object() {
   // Test 1: Create object with initial capacity
   json_value_t obj = json_value_object(3);
   TEST_ASSERT(obj.type == JSON_OBJECT, "Object should have JSON_OBJECT type");
-  TEST_ASSERT(obj.object.entries != NULL, "Object entries should not be NULL");
-  TEST_ASSERT(obj.object.len == 0, "New object should have length 0");
-  TEST_ASSERT(obj.object.cap == 3, "Object should have specified capacity");
+  TEST_ASSERT(obj.object.buckets != NULL, "Object buckets should not be NULL");
+  TEST_ASSERT(json_object_size(&obj) == 0, "New object should have size 0");
+  TEST_ASSERT(obj.object.capacity >= 3, "Object should have at least specified capacity");
 
-  // Test 2: Create object with zero capacity
+  // Test 2: Create object with zero capacity (should default to minimum)
   json_value_t empty_obj = json_value_object(0);
   TEST_ASSERT(empty_obj.type == JSON_OBJECT, "Empty object should have JSON_OBJECT type");
-  TEST_ASSERT(empty_obj.object.len == 0, "Empty object should have length 0");
-  TEST_ASSERT(empty_obj.object.cap == 0, "Empty object should have capacity 0");
+  TEST_ASSERT(json_object_size(&empty_obj) == 0, "Empty object should have size 0");
+  TEST_ASSERT(empty_obj.object.capacity >= 16, "Empty object should have default capacity");
 
-  // Test 3: Create object with large capacity
+  // Test 3: Create object with large capacity (power of 2)
   json_value_t large_obj = json_value_object(100);
   TEST_ASSERT(large_obj.type == JSON_OBJECT, "Large object should have JSON_OBJECT type");
-  TEST_ASSERT(large_obj.object.cap == 100, "Large object should have correct capacity");
-  TEST_ASSERT(large_obj.object.len == 0, "Large object should start with length 0");
+  TEST_ASSERT(large_obj.object.capacity >= 100, "Large object should have at least specified capacity");
+  TEST_ASSERT(json_object_size(&large_obj) == 0, "Large object should start with size 0");
+
+  // Test 4: Test set and get operations
+  json_value_t test_obj = json_value_object(0);
+  json_object_set(&test_obj, strdup("name"), json_value_string(strdup("John")));
+  TEST_ASSERT(json_object_size(&test_obj) == 1, "Object should have 1 entry after set");
+  json_value_t name_val = json_object_get(&test_obj, "name");
+  TEST_ASSERT(name_val.type == JSON_STRING, "Retrieved value should be string");
+  TEST_ASSERT(strcmp(name_val.string, "John") == 0, "Retrieved value should be 'John'");
+
+  // Test 5: Test has operation
+  TEST_ASSERT(json_object_has(&test_obj, "name") == 1, "Object should have 'name' key");
+  TEST_ASSERT(json_object_has(&test_obj, "unknown") == 0, "Object should not have 'unknown' key");
 
   // Clean up allocated objects
-  free(obj.object.entries);
-  free(large_obj.object.entries);
+  json_value_free(&obj);
+  json_value_free(&empty_obj);
+  json_value_free(&large_obj);
+  json_value_free(&test_obj);
 }
 
 void test_json_value_cmp() {
@@ -289,13 +303,14 @@ void test_json_array_cmp() {
 void test_json_object_cmp() {
   printf("\n=== Testing json_object_cmp ===\n");
 
-  // Test 1: Compare objects with different lengths
-  json_value_t obj1 = json_value_object(1);
-  json_value_t obj2 = json_value_object(2);
-  obj1.object.len = 1;
-  obj2.object.len = 2;
-  
-  TEST_ASSERT(json_object_cmp(&obj1, &obj2) == -1, "Objects with different lengths should return -1");
+  // Test 1: Compare objects with different sizes
+  json_value_t obj1 = json_value_object(0);
+  json_value_t obj2 = json_value_object(0);
+  json_object_set(&obj1, strdup("key1"), json_value_number(1));
+  json_object_set(&obj2, strdup("key1"), json_value_number(1));
+  json_object_set(&obj2, strdup("key2"), json_value_number(2));
+
+  TEST_ASSERT(json_object_cmp(&obj1, &obj2) == -1, "Objects with different sizes should return -1");
 
   // Test 2: Compare empty objects
   json_value_t empty_obj1 = json_value_object(0);
@@ -304,13 +319,35 @@ void test_json_object_cmp() {
 
   // Test 3: Compare non-object types
   json_value_t not_obj = json_value_number(42);
-  json_value_t obj = json_value_object(1);
+  json_value_t obj = json_value_object(0);
   TEST_ASSERT(json_object_cmp(&not_obj, &obj) == -1, "Non-object compared to object should return -1");
 
+  // Test 4: Compare objects with same keys and values
+  json_value_t obj3 = json_value_object(0);
+  json_value_t obj4 = json_value_object(0);
+  json_object_set(&obj3, strdup("name"), json_value_string(strdup("John")));
+  json_object_set(&obj3, strdup("age"), json_value_number(30));
+  json_object_set(&obj4, strdup("name"), json_value_string(strdup("John")));
+  json_object_set(&obj4, strdup("age"), json_value_number(30));
+  TEST_ASSERT(json_object_cmp(&obj3, &obj4) == 0, "Objects with same keys and values should be equal");
+
+  // Test 5: Compare objects with same keys but different values
+  json_value_t obj5 = json_value_object(0);
+  json_value_t obj6 = json_value_object(0);
+  json_object_set(&obj5, strdup("name"), json_value_string(strdup("John")));
+  json_object_set(&obj6, strdup("name"), json_value_string(strdup("Jane")));
+  TEST_ASSERT(json_object_cmp(&obj5, &obj6) != 0, "Objects with different values should not be equal");
+
   // Clean up
-  free(obj1.object.entries);
-  free(obj2.object.entries);
-  free(obj.object.entries);
+  json_value_free(&obj1);
+  json_value_free(&obj2);
+  json_value_free(&empty_obj1);
+  json_value_free(&empty_obj2);
+  json_value_free(&obj);
+  json_value_free(&obj3);
+  json_value_free(&obj4);
+  json_value_free(&obj5);
+  json_value_free(&obj6);
 }
 
 void test_json_value_free() {

@@ -105,10 +105,10 @@ help:
 	@echo "  make uninstall    - Uninstall library and headers"
 	@echo ""
 	@echo "$(YELLOW)Benchmarking:$(NC)"
-	@echo "  make benchmark         - Run full benchmark suite (perf + memory)"
-	@echo "  make benchmark-perf    - Run performance benchmarks only"
-	@echo "  make benchmark-memory  - Run memory benchmarks only"
-	@echo "  make benchmark-view    - Start web server & open visualization"
+	@echo "  make benchmark-data    - Generate test data files"
+	@echo "  make benchmark         - Run full benchmark suite"
+	@echo "  make benchmark-history - Collect benchmarks for all commits"
+	@echo "  make benchmark-view    - View results in browser"
 	@echo ""
 	@echo "$(YELLOW)Analysis:$(NC)"
 	@echo "  make info         - Show binary size information"
@@ -203,6 +203,7 @@ test: build-tests
 # Benchmarks
 # ============================================================================
 
+# Build benchmark binary with memory tracking
 $(BENCH_DIR)/bin/bench_parser: $(BENCH_DIR)/src/bench_parser.c $(BENCH_DIR)/src/mem_track.c $(LIB_SOURCES) $(LIB_HEADERS)
 	@echo "$(YELLOW)Building performance benchmark...$(NC)"
 	@mkdir -p $(BENCH_DIR)/bin
@@ -211,32 +212,37 @@ $(BENCH_DIR)/bin/bench_parser: $(BENCH_DIR)/src/bench_parser.c $(BENCH_DIR)/src/
 
 # Build benchmarks
 build-benchmarks: $(BENCH_BINARIES)
-	@echo "$(GREEN)✓ All benchmarks built$(NC)"
+	@echo "$(GREEN)✓ Benchmark binaries built$(NC)"
 
-# Run benchmarks (new comprehensive system with git metadata)
-benchmark: build-benchmarks
-	@$(BENCH_DIR)/scripts/run_benchmark.sh
+# Generate test data files
+benchmark-data:
+	@echo "$(YELLOW)Generating test data files...$(NC)"
+	@node $(BENCH_DIR)/src/generate_test_data.js
+	@echo "$(GREEN)✓ Test data generated$(NC)"
 
-# Run performance benchmarks only
-benchmark-perf: build-benchmarks
-	@$(BENCH_DIR)/scripts/run_benchmark.sh --perf-only
+# Run full benchmark suite
+benchmark:
+	@bash $(BENCH_DIR)/scripts/run_benchmark.sh
 
-# Run memory benchmarks only
-benchmark-memory: build-benchmarks
-	@$(BENCH_DIR)/scripts/run_benchmark.sh --memory-only
+# Collect historical benchmark data for all commits
+benchmark-history:
+	@bash $(BENCH_DIR)/scripts/collect_history.sh
 
-# Open visualization in browser (starts local server to avoid CORS issues)
+# View benchmark results in browser
 benchmark-view:
-	@$(BENCH_DIR)/scripts/serve_visualization.sh
-
-# Legacy benchmark targets (kept for compatibility)
-benchmark-legacy: build-benchmarks
 	@echo "$(BLUE)=========================================$(NC)"
-	@echo "$(BLUE)Running Benchmarks (Legacy)$(NC)"
+	@echo "$(BLUE)Opening benchmark visualization...$(NC)"
 	@echo "$(BLUE)=========================================$(NC)"
-	@cd $(BENCH_DIR) && ./run_benchmarks.sh
 	@echo ""
-	@cd $(BENCH_DIR) && ./run_memory_benchmarks.sh
+	@if [ ! -f "$(BENCH_DIR)/results/index.json" ]; then \
+		echo "$(RED)No benchmark results found.$(NC)"; \
+		echo "$(YELLOW)Run 'make benchmark' first.$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)Starting local server...$(NC)"
+	@echo "$(YELLOW)Press Ctrl+C to stop$(NC)"
+	@echo ""
+	@cd $(BENCH_DIR) && python3 -m http.server 8080 || python -m SimpleHTTPServer 8080
 
 # ============================================================================
 # Analysis & Information

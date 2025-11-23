@@ -17,16 +17,23 @@ int json_array_cmp(json_value_t *a, json_value_t *b) {
 }
 
 int json_object_cmp(json_value_t *a, json_value_t *b) {
-  // TODO: Current implementation only checks ordered object. It should be
-  // ehanced to work with unordered objects;
   if (a->type != JSON_OBJECT || b->type != JSON_OBJECT) return -1;
-  if (a->object.len != b->object.len) return -1;
+  if (a->object.size != b->object.size) return -1;
 
-  for (int i = 0; i < a->object.len; i++) {
-    int str_res = strcmp(a->object.entries[i].key, b->object.entries[i].key);
-    int res = json_value_cmp(&a->object.entries[i].value, &b->object.entries[i].value);
-    if (str_res != 0 || res != 0)
-      return res;
+  // For each entry in a, check if it exists in b with the same value
+  for (size_t i = 0; i < a->object.capacity; i++) {
+    hash_entry_t *entry = a->object.buckets[i];
+    while (entry) {
+      // Look up the same key in b
+      json_value_t *b_val = hash_table_get(&b->object, entry->key, entry->key_len);
+      if (!b_val) return -1;  // Key not found in b
+
+      // Compare values
+      int res = json_value_cmp(entry->value, b_val);
+      if (res != 0) return res;
+
+      entry = entry->next;
+    }
   }
 
   return 0;
@@ -69,8 +76,11 @@ json_value_t json_value_init(json_type_t type) {
 }
 
 void json_value_free(json_value_t *val) {
+  if (!val) return;
+
   if (val->type == JSON_STRING) {
     free(val->string);
+    val->string = NULL;
   }
   if (val->type == JSON_ARRAY) {
     // Free nested values in array
@@ -78,84 +88,224 @@ void json_value_free(json_value_t *val) {
       json_value_free(&val->array.items[i]);
     }
     free(val->array.items);
+    val->array.items = NULL;
   }
   if (val->type == JSON_OBJECT) {
-    // Free keys and nested values in object
-    for (size_t i = 0; i < val->object.len; i++) {
-      free(val->object.entries[i].key);
-      json_value_free(&val->object.entries[i].value);
-    }
-    free(val->object.entries);
+    // Free hash table entries (keys, values, and buckets)
+    hash_table_free_entries(&val->object);
   }
   // Note: Do not free val itself, as it may be stack-allocated
+}
+
+// Initialize a hash table in-place (for embedded structs)
+int hash_table_init_inplace(hash_table_t *table, size_t initial_size) {
+  if (!table) return -1;
+
+  size_t capacity = 16;
+  while (capacity < initial_size) {
+    capacity <<= 1;
+  }
+
+  table->buckets = calloc(capacity, sizeof(hash_entry_t *));
+  if (!table->buckets) {
+    return -1;
+  }
+
+  table->capacity = capacity;
+  table->size = 0;
+  table->load_factor = 0.75f;
+  return 0;
+}
+
+// Allocate and initialize a hash table on heap
+hash_table_t *hash_table_init(size_t initial_size) {
+  hash_table_t *table = (hash_table_t *)malloc(sizeof(hash_table_t));
+  if (!table) return NULL;
+
+  if (hash_table_init_inplace(table, initial_size) != 0) {
+    free(table);
+    return NULL;
+  }
+
+  return table;
+}
+
+// Free only entries and buckets (for embedded structs)
+void hash_table_free_entries(hash_table_t *table) {
+  if (!table || !table->buckets) return;
+
+  for (size_t i = 0; i < table->capacity; i++) {
+    hash_entry_t *entry = table->buckets[i];
+    while (entry) {
+      hash_entry_t *next = entry->next;
+      free(entry->key);
+      json_value_free(entry->value);  // Free the value
+      free(entry->value);             // Free the value pointer
+      free(entry);
+      entry = next;
+    }
+  }
+
+  free(table->buckets);
+  table->buckets = NULL;
+  table->size = 0;
+  table->capacity = 0;
+}
+
+// Free entire hash table (for heap-allocated tables)
+void hash_table_free(hash_table_t *table) {
+  if (!table) return;
+  hash_table_free_entries(table);
+  free(table);
+}
+
+int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json_value_t *value) {
+  if ((float)table->size / table->capacity >= table->load_factor) {
+    if (hash_table_resize(table) != 0) {
+      return -1;
+    }
+  }
+
+  uint32_t hash = hash_string(key, key_len);
+  size_t index = hash & (table->capacity - 1);
+  
+  hash_entry_t *entry = table->buckets[index];
+  while(entry) {
+    if (entry->key_len == key_len && memcmp(entry->key, key, key_len) == 0) {
+      return 1;  // Duplicate key found
+    }
+    entry = entry->next;
+  }
+
+  hash_entry_t *new_entry = malloc(sizeof(hash_entry_t));
+  if (!new_entry) return -1;
+
+  new_entry->key = malloc(key_len + 1);
+  if (!new_entry->key) {
+    free(new_entry);
+    return -1;
+  }
+
+  memcpy(new_entry->key, key, key_len);
+  new_entry->key[key_len] = '\0';
+  new_entry->key_len = key_len;
+  new_entry->value = value;
+
+  new_entry->next = table->buckets[index];
+  table->buckets[index] = new_entry;
+  table->size++;
+
+  return 0;
 }
 
 void json_object_set(json_value_t *obj, char *key, json_value_t val) {
   if (obj->type != JSON_OBJECT) return;
 
-  if ((float)obj->object.len >= (float)obj->object.cap * 0.75) {
-    size_t new_cap = (obj->object.cap == 0) ? 4 : obj->object.cap;
-    json_object_entry *temp = realloc(
-      obj->object.entries,
-      new_cap * 2 * sizeof(json_object_entry)
-    );
-    if (!temp) {
-      if (obj->object.cap <= obj->object.len) return;
-    } else {
-      obj->object.entries = temp;
-      obj->object.cap = new_cap * 2;
-    }
-  }
+  size_t key_len = strlen(key);
 
-  json_object_entry *entry = NULL;
-
-  for (int i = 0; i < obj->object.len; i++) {
-    if (!strcmp(obj->object.entries[i].key, key)) {
-      entry = &obj->object.entries[i];
-      break;
-    }
-  }
-
-  if (!entry) {
-    json_object_entry new_entry = {.key = key, .value = val};
-    obj->object.entries[obj->object.len++] = new_entry;
+  // Check if key already exists
+  json_value_t *existing = hash_table_get(&obj->object, key, key_len);
+  if (existing) {
+    // Update existing value
+    json_value_free(existing);
+    *existing = val;
+    free(key);  // Free the duplicate key
     return;
   }
 
-  free(entry->key);
-  json_value_free(&entry->value);
-  entry->key = key;
-  entry->value = val;
+  // Allocate value on heap for hash table storage
+  json_value_t *heap_val = malloc(sizeof(json_value_t));
+  if (!heap_val) return;
+  *heap_val = val;
+
+  // Insert into hash table (key is copied by hash_table_insert)
+  int result = hash_table_insert(&obj->object, key, key_len, heap_val);
+  if (result != 0) {
+    free(heap_val);
+  }
+  free(key);  // hash_table_insert copies the key
+}
+
+json_value_t *hash_table_get(hash_table_t *table, const char *key, size_t key_len) {
+  uint32_t hash = hash_string(key, key_len);
+  size_t index = hash & (table->capacity - 1);
+
+  hash_entry_t *entry = table->buckets[index];
+  while (entry) {
+    if (entry->key_len == key_len && memcmp(entry->key, key, key_len) == 0) {
+      return entry->value;
+    }
+    entry = entry->next;
+  }
+
+  return NULL;
+}
+
+int hash_table_delete(hash_table_t *table, const char *key, size_t key_len) {
+  uint32_t hash = hash_string(key, key_len);
+  size_t index = hash & (table->capacity - 1);
+
+  hash_entry_t *entry = table->buckets[index];
+  hash_entry_t *prev = NULL;
+
+  while (entry) {
+    if (entry->key_len == key_len && memcmp(entry->key, key, key_len) == 0) {
+      // Found the entry to delete
+      if (prev) {
+        prev->next = entry->next;
+      } else {
+        table->buckets[index] = entry->next;
+      }
+
+      // Free the entry
+      free(entry->key);
+      json_value_free(entry->value);
+      free(entry->value);
+      free(entry);
+      table->size--;
+      return 0;
+    }
+    prev = entry;
+    entry = entry->next;
+  }
+
+  return -1;  // Key not found
 }
 
 json_value_t json_object_get(json_value_t *obj, char *key) {
   if (obj->type != JSON_OBJECT) return json_value_init(JSON_NULL);
 
-  for (int i = 0; i < obj->object.len; i++) {
-    if (!strcmp(obj->object.entries[i].key, key)) {
-      return obj->object.entries[i].value;
-    }
+  size_t key_len = strlen(key);
+  json_value_t *result = hash_table_get(&obj->object, key, key_len);
+
+  if (result) {
+    return *result;
   }
 
   return json_value_init(JSON_NULL);
 }
 
 int json_object_delete(json_value_t *obj, char *key) {
-  if (obj->type != JSON_OBJECT) return 1;
-  for (int i = 0; i < obj->object.len; i++) {
-    if (!strcmp(obj->object.entries[i].key, key)) {
-      // TODO: implement deletion
-      return 0;
-    }
-  }
-  return 1;
+  if (obj->type != JSON_OBJECT) return -1;
+  size_t key_len = strlen(key);
+  return hash_table_delete(&obj->object, key, key_len);
+}
+
+size_t json_object_size(json_value_t *obj) {
+  if (obj->type != JSON_OBJECT) return 0;
+  return obj->object.size;
+}
+
+int json_object_has(json_value_t *obj, char *key) {
+  if (obj->type != JSON_OBJECT) return 0;
+  size_t key_len = strlen(key);
+  return hash_table_get(&obj->object, key, key_len) != NULL;
 }
 
 /*
- * TODO: For robust object operation, following function must be implemented.
+ * TODO: For robust object operation, following functions can be added:
  * json_object_clear(json_value_t *obj)
  * json_object_keys(json_value_t *obj)
- * json_object_has(json_value_t *obj, char *key)
  */
 
 void json_array_push(json_value_t *arr, json_value_t val) {
@@ -215,8 +365,6 @@ json_value_t json_value_array(size_t size) {
 }
 json_value_t json_value_object(size_t size) {
   json_value_t val = json_value_init(JSON_OBJECT);
-  val.object.entries = malloc(sizeof(json_object_entry) * size);
-  val.object.len = 0;
-  val.object.cap = size;
+  hash_table_init_inplace(&val.object, size);
   return val;
 }
