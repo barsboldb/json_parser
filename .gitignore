@@ -1,4 +1,6 @@
 dist/
+build/
+lib/
 
 # MacOS specific
 .DS_store
