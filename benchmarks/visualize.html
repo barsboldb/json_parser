@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Parser Benchmark Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 2px solid #21262d;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #58a6ff;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #21262d;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 1em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #c9d1d9;
+        }
+
+        .tab.active {
+            color: #58a6ff;
+            border-bottom-color: #58a6ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chart-container {
+            background: #161b22;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #21262d;
+        }
+
+        .chart-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #c9d1d9;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #8b949e;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #58a6ff;
+        }
+
+        .commit-timeline {
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .commit-item {
+            padding: 15px;
+            border-left: 3px solid #21262d;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .commit-item:hover {
+            border-left-color: #58a6ff;
+            background: #0d1117;
+        }
+
+        .commit-item.selected {
+            border-left-color: #3fb950;
+            background: #0d1117;
+        }
+
+        .commit-hash {
+            font-family: monospace;
+            color: #58a6ff;
+            font-size: 0.9em;
+        }
+
+        .commit-date {
+            color: #8b949e;
+            font-size: 0.85em;
+        }
+
+        .warning {
+            background: #f854281a;
+            border: 1px solid #f85428;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #f85428;
+        }
+
+        .success {
+            background: #3fb9501a;
+            border: 1px solid #3fb950;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #3fb950;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2em;
+            color: #8b949e;
+        }
+
+        .controls {
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        select {
+            background: #0d1117;
+            color: #c9d1d9;
+            border: 1px solid #21262d;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        label {
+            color: #8b949e;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 JSON Parser Benchmark Results</h1>
+            <p class="subtitle">Performance & Memory Analysis</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">Overview</button>
+            <button class="tab" onclick="showTab('comparison')">vs Node.js</button>
+            <button class="tab" onclick="showTab('progression')">Historical Progression</button>
+            <button class="tab" onclick="showTab('memory')">Memory Analysis</button>
+            <button class="tab" onclick="showTab('commits')">Commit Timeline</button>
+        </div>
+
+        <div id="overview" class="tab-content active">
+            <div class="stats-grid" id="stats-grid"></div>
+            <div class="chart-container">
+                <h2 class="chart-title">Throughput by Test File (Latest)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="throughputChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Parse Time by Test File (Latest)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="parseTimeChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Throughput Across Files - C Parser vs Node.js (Line Chart)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="throughputLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="comparison" class="tab-content">
+            <div class="chart-container">
+                <h2 class="chart-title">Throughput: C Parser vs Node.js</h2>
+                <div class="chart-wrapper">
+                    <canvas id="comparisonThroughputChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Parse Time: C Parser vs Node.js</h2>
+                <div class="chart-wrapper">
+                    <canvas id="comparisonTimeChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Speedup Factor (C Parser / Node.js)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="speedupChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="progression" class="tab-content">
+            <div class="controls">
+                <label>Select Test File:</label>
+                <select id="fileSelect" onchange="updateProgressionCharts()">
+                    <option value="">All Files (Average)</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">File Performance Across Commits</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">Each line shows how a specific file's throughput changed across commits. Use this to identify which optimizations helped or hurt specific file types.</p>
+                <div class="chart-wrapper" style="height: 500px;">
+                    <canvas id="fileProgressionChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">All Commits - Throughput Across Files (Line Chart)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="allCommitsLineChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Throughput Over Time</h2>
+                <div class="chart-wrapper">
+                    <canvas id="progressionThroughputChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Parse Time Over Time</h2>
+                <div class="chart-wrapper">
+                    <canvas id="progressionTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="memory" class="tab-content">
+            <div id="memoryWarnings"></div>
+            <div class="chart-container">
+                <h2 class="chart-title">RSS (Resident Set Size) by Test File</h2>
+                <div class="chart-wrapper">
+                    <canvas id="rssChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">RSS Delta (Memory Growth) by Test File</h2>
+                <div class="chart-wrapper">
+                    <canvas id="rssDeltaChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">RSS Peak vs End by Test File</h2>
+                <div class="chart-wrapper">
+                    <canvas id="rssPeakChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Memory Efficiency (Input Size vs RSS Delta)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="memoryEfficiencyChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">C Parser vs Node.js - Memory Comparison</h2>
+                <div class="chart-wrapper">
+                    <canvas id="memoryComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="commits" class="tab-content">
+            <div class="commit-timeline" id="commitTimeline"></div>
+        </div>
+
+        <div class="loading" id="loading">Loading benchmark data...</div>
+    </div>
+
+    <script>
+        let benchmarkData = null;
+        let charts = {};
+
+        Chart.defaults.color = '#8b949e';
+        Chart.defaults.borderColor = '#21262d';
+
+        const colors = {
+            primary: '#58a6ff',
+            secondary: '#f778ba',
+            success: '#3fb950',
+            warning: '#d29922',
+            danger: '#f85428',
+            nodejs: '#3fb950'
+        };
+
+        async function loadData() {
+            try {
+                const indexResponse = await fetch('results/index.json');
+                const index = await indexResponse.json();
+
+                if (index.entries.length === 0) {
+                    document.getElementById('loading').innerHTML =
+                        '<div class="warning">No benchmark data found. Run <code>make benchmark</code> first.</div>';
+                    return;
+                }
+
+                benchmarkData = {
+                    index: index,
+                    results: []
+                };
+
+                for (const entry of index.entries) {
+                    try {
+                        const perfResponse = await fetch(`results/history/${entry.name}/performance.csv`);
+                        const perfText = await perfResponse.text();
+
+                        const memResponse = await fetch(`results/history/${entry.name}/memory.csv`);
+                        const memText = await memResponse.text();
+
+                        const nodePerfResponse = await fetch(`results/history/${entry.name}/nodejs_performance.csv`);
+                        const nodePerfText = await nodePerfResponse.text();
+
+                        // Load Node.js memory data
+                        let nodeMemory = [];
+                        try {
+                            const nodeMemResponse = await fetch(`results/history/${entry.name}/nodejs_memory.csv`);
+                            const nodeMemText = await nodeMemResponse.text();
+                            nodeMemory = parseCSV(nodeMemText);
+                        } catch (e) {
+                            console.warn(`No nodejs_memory.csv for ${entry.name}`);
+                        }
+
+                        benchmarkData.results.push({
+                            entry: entry,
+                            performance: parseCSV(perfText),
+                            memory: parseCSV(memText),
+                            nodePerformance: parseCSV(nodePerfText),
+                            nodeMemory: nodeMemory
+                        });
+                    } catch (e) {
+                        console.error(`Failed to load data for ${entry.name}:`, e);
+                    }
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                renderAll();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('loading').innerHTML =
+                    '<div class="warning">Error loading benchmark data: ' + error.message + '</div>';
+            }
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',');
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const row = {};
+                headers.forEach((header, index) => {
+                    const value = values[index];
+                    row[header] = isNaN(value) ? value : parseFloat(value);
+                });
+                data.push(row);
+            }
+
+            return data;
+        }
+
+        function renderAll() {
+            renderStats();
+            renderOverviewCharts();
+            renderComparisonCharts();
+            renderMemoryCharts();
+            renderCommitTimeline();
+            populateFileSelect();
+            renderFileProgressionChart();
+            renderAllCommitsLineChart();
+            updateProgressionCharts();
+        }
+
+        function renderStats() {
+            const latest = benchmarkData.results[0];
+            const statsGrid = document.getElementById('stats-grid');
+
+            const avgThroughput = latest.performance.reduce((sum, row) => sum + row.throughput_mbps, 0) / latest.performance.length;
+            const avgParseTime = latest.performance.reduce((sum, row) => sum + row.parse_time_ms, 0) / latest.performance.length;
+            const totalFiles = latest.performance.length;
+            const leaks = latest.memory.filter(row => row.leaked > 0).length;
+
+            // Calculate average RSS delta in MB
+            const avgRssDelta = latest.memory.reduce((sum, row) => sum + row.rss_delta, 0) / latest.memory.length / (1024 * 1024);
+
+            // Get max RSS peak in MB
+            const maxRssPeak = Math.max(...latest.memory.map(row => row.rss_peak)) / (1024 * 1024);
+
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Average Throughput</div>
+                    <div class="stat-value">${avgThroughput.toFixed(2)} MB/s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Average Parse Time</div>
+                    <div class="stat-value">${avgParseTime.toFixed(2)} ms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg RSS Growth</div>
+                    <div class="stat-value">${avgRssDelta.toFixed(2)} MB</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Peak RSS</div>
+                    <div class="stat-value">${maxRssPeak.toFixed(2)} MB</div>
+                </div>
+            `;
+        }
+
+        function renderOverviewCharts() {
+            const latest = benchmarkData.results[0];
+            const files = latest.performance.map(row => row.file);
+            const throughputs = latest.performance.map(row => row.throughput_mbps);
+            const times = latest.performance.map(row => row.parse_time_ms);
+
+            if (charts.throughput) charts.throughput.destroy();
+            charts.throughput = new Chart(document.getElementById('throughputChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [{
+                        label: 'Throughput (MB/s)',
+                        data: throughputs,
+                        backgroundColor: colors.primary
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            if (charts.parseTime) charts.parseTime.destroy();
+            charts.parseTime = new Chart(document.getElementById('parseTimeChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [{
+                        label: 'Parse Time (ms)',
+                        data: times,
+                        backgroundColor: colors.secondary
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Line chart: Throughput across files (C vs Node.js)
+            // IMPORTANT: Match Node.js data by filename, not by position
+            const nodeThroughputs = files.map(file => {
+                const row = latest.nodePerformance.find(p => p.file === file);
+                return row ? row.throughput_mbps : null;
+            });
+
+            if (charts.throughputLine) charts.throughputLine.destroy();
+            charts.throughputLine = new Chart(document.getElementById('throughputLineChart'), {
+                type: 'line',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'C Parser',
+                            data: throughputs,
+                            borderColor: colors.primary,
+                            backgroundColor: colors.primary + '33',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: false,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Node.js V8',
+                            data: nodeThroughputs,
+                            borderColor: colors.nodejs,
+                            backgroundColor: colors.nodejs + '33',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: false,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Throughput (MB/s)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Test Files'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} MB/s`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderComparisonCharts() {
+            const latest = benchmarkData.results[0];
+            const files = latest.performance.map(row => row.file);
+            const cThroughputs = latest.performance.map(row => row.throughput_mbps);
+            const cTimes = latest.performance.map(row => row.parse_time_ms);
+            // IMPORTANT: Match Node.js data by filename, not by position
+            const nodeThroughputs = files.map(file => {
+                const row = latest.nodePerformance.find(p => p.file === file);
+                return row ? row.throughput_mbps : null;
+            });
+            const nodeTimes = files.map(file => {
+                const row = latest.nodePerformance.find(p => p.file === file);
+                return row ? row.parse_time_ms : null;
+            });
+
+            if (charts.comparisonThroughput) charts.comparisonThroughput.destroy();
+            charts.comparisonThroughput = new Chart(document.getElementById('comparisonThroughputChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'C Parser',
+                            data: cThroughputs,
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'Node.js',
+                            data: nodeThroughputs,
+                            backgroundColor: colors.nodejs
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            if (charts.comparisonTime) charts.comparisonTime.destroy();
+            charts.comparisonTime = new Chart(document.getElementById('comparisonTimeChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'C Parser',
+                            data: cTimes,
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'Node.js',
+                            data: nodeTimes,
+                            backgroundColor: colors.nodejs
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            const speedups = cTimes.map((cTime, i) => nodeTimes[i] / cTime);
+
+            if (charts.speedup) charts.speedup.destroy();
+            charts.speedup = new Chart(document.getElementById('speedupChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [{
+                        label: 'Speedup Factor',
+                        data: speedups,
+                        backgroundColor: speedups.map(s => s > 1 ? colors.success : colors.danger)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function renderMemoryCharts() {
+            const latest = benchmarkData.results[0];
+            const files = latest.memory.map(row => row.file);
+            const rssStart = latest.memory.map(row => row.rss_start);
+            const rssEnd = latest.memory.map(row => row.rss_end);
+            const rssDelta = latest.memory.map(row => row.rss_delta);
+            const rssPeak = latest.memory.map(row => row.rss_peak);
+            const leaks = latest.memory.map(row => row.leaked);
+
+            // Convert bytes to MB for better readability
+            const toMB = (bytes) => bytes / (1024 * 1024);
+            const rssStartMB = rssStart.map(toMB);
+            const rssEndMB = rssEnd.map(toMB);
+            const rssDeltaMB = rssDelta.map(toMB);
+            const rssPeakMB = rssPeak.map(toMB);
+
+            const warnings = document.getElementById('memoryWarnings');
+            const totalLeaks = leaks.reduce((sum, l) => sum + l, 0);
+
+            // Info about RSS tracking
+            warnings.innerHTML = `<div class="success">✓ RSS (Resident Set Size) tracking active - showing actual process memory usage</div>`;
+
+            // RSS Chart (Start vs End)
+            if (charts.rss) charts.rss.destroy();
+            charts.rss = new Chart(document.getElementById('rssChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'RSS Start (MB)',
+                            data: rssStartMB,
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'RSS End (MB)',
+                            data: rssEndMB,
+                            backgroundColor: colors.secondary
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Memory (MB)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // RSS Delta Chart
+            if (charts.rssDelta) charts.rssDelta.destroy();
+            charts.rssDelta = new Chart(document.getElementById('rssDeltaChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [{
+                        label: 'RSS Growth (MB)',
+                        data: rssDeltaMB,
+                        backgroundColor: rssDeltaMB.map(d => d > 1 ? colors.warning : colors.success)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Memory Growth (MB)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // RSS Peak Chart
+            if (charts.rssPeak) charts.rssPeak.destroy();
+            charts.rssPeak = new Chart(document.getElementById('rssPeakChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'RSS Peak (MB)',
+                            data: rssPeakMB,
+                            backgroundColor: colors.danger
+                        },
+                        {
+                            label: 'RSS End (MB)',
+                            data: rssEndMB,
+                            backgroundColor: colors.success
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Memory (MB)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Memory Efficiency (Input size vs RSS delta)
+            const fileSizes = latest.performance.map(row => row.size_bytes / (1024 * 1024)); // MB
+            if (charts.memoryEfficiency) charts.memoryEfficiency.destroy();
+            charts.memoryEfficiency = new Chart(document.getElementById('memoryEfficiencyChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Input Size vs RSS Growth',
+                        data: files.map((file, i) => ({
+                            x: fileSizes[i],
+                            y: rssDeltaMB[i]
+                        })),
+                        backgroundColor: colors.primary,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Input File Size (MB)'
+                            },
+                            type: 'logarithmic'
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'RSS Growth (MB)'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const file = files[context.dataIndex];
+                                    return `${file}: ${context.parsed.x.toFixed(2)}MB → Δ${context.parsed.y.toFixed(2)}MB`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Memory Comparison: C Parser vs Node.js
+            // Use actual Node.js heap data from nodejs_memory.csv (matched by filename)
+            const nodeHeapDelta = files.map(file => {
+                if (!latest.nodeMemory || latest.nodeMemory.length === 0) return 0;
+                const row = latest.nodeMemory.find(m => m.file === file);
+                return row ? row.heap_used_delta : 0;
+            });
+            const nodeHeapDeltaMB = nodeHeapDelta.map(toMB);
+
+            if (charts.memoryComparison) charts.memoryComparison.destroy();
+            charts.memoryComparison = new Chart(document.getElementById('memoryComparisonChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'C Parser RSS Growth (MB)',
+                            data: rssDeltaMB,
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'Node.js Heap Growth (MB)',
+                            data: nodeHeapDeltaMB,
+                            backgroundColor: colors.nodejs
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Memory Growth (MB)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateFileSelect() {
+            const latest = benchmarkData.results[0];
+            const select = document.getElementById('fileSelect');
+
+            latest.performance.forEach(row => {
+                const option = document.createElement('option');
+                option.value = row.file;
+                option.textContent = row.file;
+                select.appendChild(option);
+            });
+        }
+
+        function renderFileProgressionChart() {
+            // This chart shows: X-axis = commits, Y-axis = throughput
+            // Each file is a separate colored line - shows how each file's performance changed across commits
+
+            const latest = benchmarkData.results[0];
+            const files = latest.performance.map(row => row.file);
+
+            // Get commits in chronological order (oldest first)
+            const commits = benchmarkData.results.map(r => {
+                const date = new Date(r.entry.timestamp);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }).reverse();
+
+            const commitShort = benchmarkData.results.map(r => r.entry.name.slice(-6)).reverse();
+
+            // Generate distinct colors for each file
+            const fileColors = [
+                '#58a6ff', '#f778ba', '#d29922', '#f85428', '#a371f7',
+                '#56d364', '#79c0ff', '#ffa657', '#ec6cb9', '#e3b341',
+                '#ff7b72', '#7ee787', '#a5d6ff', '#ffc8dd', '#bde0fe'
+            ];
+
+            const datasets = files.map((file, fileIdx) => {
+                // For each file, get its throughput across all commits (in chronological order)
+                const throughputs = benchmarkData.results.map(result => {
+                    const row = result.performance.find(p => p.file === file);
+                    return row ? row.throughput_mbps : null;
+                }).reverse();
+
+                return {
+                    label: file,
+                    data: throughputs,
+                    borderColor: fileColors[fileIdx % fileColors.length],
+                    backgroundColor: fileColors[fileIdx % fileColors.length] + '33',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    fill: false
+                };
+            });
+
+            if (charts.fileProgression) charts.fileProgression.destroy();
+            charts.fileProgression = new Chart(document.getElementById('fileProgressionChart'), {
+                type: 'line',
+                data: {
+                    labels: commitShort,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const idx = context[0].dataIndex;
+                                    return commits[idx];
+                                },
+                                label: function(context) {
+                                    const current = context.parsed.y;
+                                    const datasetIdx = context.datasetIndex;
+                                    const dataIdx = context.dataIndex;
+
+                                    // Calculate change from previous commit
+                                    let changeStr = '';
+                                    if (dataIdx > 0) {
+                                        const prev = datasets[datasetIdx].data[dataIdx - 1];
+                                        if (prev && current) {
+                                            const change = ((current - prev) / prev * 100).toFixed(1);
+                                            const sign = change >= 0 ? '+' : '';
+                                            changeStr = ` (${sign}${change}%)`;
+                                        }
+                                    }
+
+                                    return `${context.dataset.label}: ${current.toFixed(2)} MB/s${changeStr}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Throughput (MB/s)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Commits (oldest → newest)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAllCommitsLineChart() {
+            // This chart shows: X-axis = files, Y-axis = throughput
+            // Each commit is a separate colored line
+
+            const latest = benchmarkData.results[0];
+            const files = latest.performance.map(row => row.file);
+
+            // Generate distinct colors for each commit
+            const commitColors = [
+                '#58a6ff', '#f778ba', '#d29922', '#f85428', '#a371f7',
+                '#ec6cb9', '#79c0ff', '#ffa657', '#56d364', '#e3b341'
+            ];
+
+            const datasets = [];
+
+            // Add each commit as a dataset
+            benchmarkData.results.forEach((result, idx) => {
+                const commitName = result.entry.name;
+                const throughputs = files.map(file => {
+                    const row = result.performance.find(p => p.file === file);
+                    return row ? row.throughput_mbps : null;
+                });
+
+                datasets.push({
+                    label: `Commit ${commitName}`,
+                    data: throughputs,
+                    borderColor: commitColors[idx % commitColors.length],
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                });
+            });
+
+            // Add Node.js reference line
+            const nodeLatest = benchmarkData.results[0];
+            const nodeThroughputs = files.map(file => {
+                const row = nodeLatest.nodePerformance.find(p => p.file === file);
+                return row ? row.throughput_mbps : null;
+            });
+
+            datasets.push({
+                label: 'Node.js V8 Reference',
+                data: nodeThroughputs,
+                borderColor: colors.nodejs,
+                backgroundColor: 'transparent',
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                borderDash: [8, 4]
+            });
+
+            if (charts.allCommitsLine) charts.allCommitsLine.destroy();
+            charts.allCommitsLine = new Chart(document.getElementById('allCommitsLineChart'), {
+                type: 'line',
+                data: {
+                    labels: files,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 6
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} MB/s`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Throughput (MB/s)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Test Files'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateProgressionCharts() {
+            const selectedFile = document.getElementById('fileSelect').value;
+
+            const commits = benchmarkData.results.map(r => r.entry.name).reverse();
+            const timestamps = benchmarkData.results.map(r => new Date(r.entry.timestamp).toLocaleDateString()).reverse();
+
+            let throughputs, times, nodeThroughputs, nodeTimes;
+
+            if (selectedFile) {
+                throughputs = benchmarkData.results.map(r => {
+                    const row = r.performance.find(p => p.file === selectedFile);
+                    return row ? row.throughput_mbps : null;
+                }).reverse();
+
+                times = benchmarkData.results.map(r => {
+                    const row = r.performance.find(p => p.file === selectedFile);
+                    return row ? row.parse_time_ms : null;
+                }).reverse();
+
+                // Get Node.js data for the same file
+                nodeThroughputs = benchmarkData.results.map(r => {
+                    const row = r.nodePerformance.find(p => p.file === selectedFile);
+                    return row ? row.throughput_mbps : null;
+                }).reverse();
+
+                nodeTimes = benchmarkData.results.map(r => {
+                    const row = r.nodePerformance.find(p => p.file === selectedFile);
+                    return row ? row.parse_time_ms : null;
+                }).reverse();
+            } else {
+                throughputs = benchmarkData.results.map(r => {
+                    const avg = r.performance.reduce((sum, p) => sum + p.throughput_mbps, 0) / r.performance.length;
+                    return avg;
+                }).reverse();
+
+                times = benchmarkData.results.map(r => {
+                    const avg = r.performance.reduce((sum, p) => sum + p.parse_time_ms, 0) / r.performance.length;
+                    return avg;
+                }).reverse();
+
+                // Average Node.js data
+                nodeThroughputs = benchmarkData.results.map(r => {
+                    const avg = r.nodePerformance.reduce((sum, p) => sum + p.throughput_mbps, 0) / r.nodePerformance.length;
+                    return avg;
+                }).reverse();
+
+                nodeTimes = benchmarkData.results.map(r => {
+                    const avg = r.nodePerformance.reduce((sum, p) => sum + p.parse_time_ms, 0) / r.nodePerformance.length;
+                    return avg;
+                }).reverse();
+            }
+
+            if (charts.progressionThroughput) charts.progressionThroughput.destroy();
+            charts.progressionThroughput = new Chart(document.getElementById('progressionThroughputChart'), {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                            label: 'C Parser Throughput (MB/s)',
+                            data: throughputs,
+                            borderColor: colors.primary,
+                            backgroundColor: colors.primary + '33',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Node.js V8 Reference',
+                            data: nodeThroughputs,
+                            borderColor: colors.nodejs,
+                            backgroundColor: 'transparent',
+                            tension: 0.3,
+                            fill: false,
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} MB/s`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Throughput (MB/s)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (charts.progressionTime) charts.progressionTime.destroy();
+            charts.progressionTime = new Chart(document.getElementById('progressionTimeChart'), {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                            label: 'C Parser Parse Time (ms)',
+                            data: times,
+                            borderColor: colors.secondary,
+                            backgroundColor: colors.secondary + '33',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Node.js V8 Reference',
+                            data: nodeTimes,
+                            borderColor: colors.nodejs,
+                            backgroundColor: 'transparent',
+                            tension: 0.3,
+                            fill: false,
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(3)} ms`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Parse Time (ms)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCommitTimeline() {
+            const timeline = document.getElementById('commitTimeline');
+
+            timeline.innerHTML = benchmarkData.index.entries.map(entry => `
+                <div class="commit-item" onclick="selectCommit('${entry.name}')">
+                    <div class="commit-hash">${entry.name}</div>
+                    <div class="commit-date">${new Date(entry.timestamp).toLocaleString()}</div>
+                    <div style="margin-top: 5px; color: #8b949e;">Status: ${entry.git_status}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectCommit(name) {
+            // Future: Could show detailed view for specific commit
+            console.log('Selected commit:', name);
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

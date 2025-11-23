@@ -1,0 +1,33 @@
+{
+  "id": 123456,
+  "node_id": "MDEwOlJlcG9zaXRvcnkxMjM0NTY=",
+  "name": "awesome-project",
+  "full_name": "user/awesome-project",
+  "private": false,
+  "owner": {
+    "login": "user",
+    "id": 789,
+    "avatar_url": "https://avatars.githubusercontent.com/u/789",
+    "url": "https://api.github.com/users/user",
+    "type": "User"
+  },
+  "html_url": "https://github.com/user/awesome-project",
+  "description": "An awesome project for doing awesome things",
+  "fork": false,
+  "created_at": "2023-01-15T10:30:00Z",
+  "updated_at": "2023-11-20T15:45:00Z",
+  "pushed_at": "2023-11-20T15:45:00Z",
+  "size": 1024,
+  "stargazers_count": 42,
+  "watchers_count": 42,
+  "language": "JavaScript",
+  "forks_count": 7,
+  "open_issues_count": 3,
+  "default_branch": "main",
+  "topics": [
+    "javascript",
+    "nodejs",
+    "awesome"
+  ],
+  "visibility": "public"
+}

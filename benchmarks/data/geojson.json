@@ -1,0 +1,1605 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.97850215808207,
+          -11.604552106740684
+        ]
+      },
+      "properties": {
+        "name": "Location 0",
+        "description": "MsCijcMJOfrkscJkgmWGNKrYF8CFVseROxP9DWbTEW8JSWQ0mD",
+        "category": "hotel",
+        "rating": 2.336230994087507
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.24827174148913,
+          -20.79611368176802
+        ]
+      },
+      "properties": {
+        "name": "Location 1",
+        "description": "0ef6IVN5cIcmKwtNkVkhZIVAE3tvpT7UxaryNbBqFWdm3eBkHZ",
+        "category": "museum",
+        "rating": 0.33279296916790213
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -88.76494571449741,
+          14.768860155364365
+        ]
+      },
+      "properties": {
+        "name": "Location 2",
+        "description": "fsoBCx6ypQbS1L1jVhQxqrKhjMEU9sxKzF6R2d53Iuip78jeb8",
+        "category": "restaurant",
+        "rating": 1.2202804494418484
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.9652690449376,
+          -16.742954613550253
+        ]
+      },
+      "properties": {
+        "name": "Location 3",
+        "description": "MHV5VAzE2sXtrcKXTrh3sFbojOVOmE9DjOZxtHNC6aFEozzMTM",
+        "category": "restaurant",
+        "rating": 0.794613373937193
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.05008175898857,
+          -47.827921292498026
+        ]
+      },
+      "properties": {
+        "name": "Location 4",
+        "description": "Yrc51ISP3fnPfjjRZWYmQIBuPdsMn69WtQe1HoqBiO5UZgnUTO",
+        "category": "park",
+        "rating": 2.3651388435491216
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.9116312805735447,
+          -75.272696785725
+        ]
+      },
+      "properties": {
+        "name": "Location 5",
+        "description": "eXDBuMA2BIhsHHlwVkC9Y8WHv40szcEMAdiWzITkfCq9EqIEic",
+        "category": "museum",
+        "rating": 0.124859781945873
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -173.1322780100545,
+          4.067377464418186
+        ]
+      },
+      "properties": {
+        "name": "Location 6",
+        "description": "2M6pzZYzgiQqErP2FBaUUYXRfg6KlJRoliVJna9kxtyiIPMk5M",
+        "category": "museum",
+        "rating": 1.5748684860543583
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          157.06420460584354,
+          77.75338379455911
+        ]
+      },
+      "properties": {
+        "name": "Location 7",
+        "description": "Cy5EsofUxm4FilLeo1Dknml5Bcc8K1hE7HReZy4VLodssIxezm",
+        "category": "restaurant",
+        "rating": 3.7531955894490823
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.89988305674905,
+          35.850892585657235
+        ]
+      },
+      "properties": {
+        "name": "Location 8",
+        "description": "I6XtEDPkAxGKJYmOnyyw3KByY6khBaucik1ESw5XI9AhZ0yXOL",
+        "category": "hotel",
+        "rating": 2.748302172707268
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.370549592840831,
+          -38.84953905984891
+        ]
+      },
+      "properties": {
+        "name": "Location 9",
+        "description": "tBOeiCeTxDVpjn8dvgkog3431uJ50wiiBEWxrZJai9vnnpDfzQ",
+        "category": "park",
+        "rating": 1.3566492830966814
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          170.69421318795196,
+          -82.16789140395873
+        ]
+      },
+      "properties": {
+        "name": "Location 10",
+        "description": "2hPLn2OK1SuTYheDVbG8k90wVWvcARPBpLT18VFX1ti8rFFgea",
+        "category": "museum",
+        "rating": 1.9431093807553401
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.04920519057164,
+          44.19091579123122
+        ]
+      },
+      "properties": {
+        "name": "Location 11",
+        "description": "NCEeg77xkPrXp7tDjs637Bj6D1Wvuhdor0Ln7OTspFH7CwXJjK",
+        "category": "restaurant",
+        "rating": 2.4067606869597755
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.1857620407767,
+          49.081968773818375
+        ]
+      },
+      "properties": {
+        "name": "Location 12",
+        "description": "EWrp7wRIZD9nnjdfR1b1pllUZlfoux0zxcjgHZdeJc8dLVS7dL",
+        "category": "museum",
+        "rating": 2.415497789820976
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -125.8481837061909,
+          -18.178720293656056
+        ]
+      },
+      "properties": {
+        "name": "Location 13",
+        "description": "r72lmpHifTszdNqeAqfPZVKOfxGxMBJQGJ5LPnLOuWxsmaEYwf",
+        "category": "hotel",
+        "rating": 1.7011765078566188
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.2383501106633,
+          9.070247896598403
+        ]
+      },
+      "properties": {
+        "name": "Location 14",
+        "description": "WYXWNqnZsWbgqkbVMxuSiFr2djrgfFvb3zzfEP3ITGmVA0OxwI",
+        "category": "museum",
+        "rating": 2.991534614564375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -64.32519565568627,
+          34.20169437570837
+        ]
+      },
+      "properties": {
+        "name": "Location 15",
+        "description": "Vprej9f9xVGtYrGU4MTU0L1DKvZFF0S3B8LQsOjoDGjwBdD1yI",
+        "category": "park",
+        "rating": 2.348632658480617
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -135.63654153488062,
+          58.88452370141394
+        ]
+      },
+      "properties": {
+        "name": "Location 16",
+        "description": "yfoRHGacHgFW7mpQW9CHBpsNGTqEopnsK5FZObUVJveC1ghZYY",
+        "category": "museum",
+        "rating": 2.042222923915269
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          167.4394978988782,
+          48.62897202799695
+        ]
+      },
+      "properties": {
+        "name": "Location 17",
+        "description": "Peie0EQfrMd7VreoWQ4LtfU4ML2fIvaHCCjRfQcDihKZwnEx3r",
+        "category": "hotel",
+        "rating": 0.0009095275364279232
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.94466011226717,
+          -27.143299443146923
+        ]
+      },
+      "properties": {
+        "name": "Location 18",
+        "description": "HHeTHpZfBA4NirB8tTqdmshe56C3SJPpC1RsktJnwuXCV0nSQf",
+        "category": "museum",
+        "rating": 0.42236408616941334
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          82.20687935832825,
+          -64.33159137170163
+        ]
+      },
+      "properties": {
+        "name": "Location 19",
+        "description": "vfPGeUVW7WJt3J83nYseOOy6NILpWE0MWC3cfjFZX4CJ5emo8t",
+        "category": "restaurant",
+        "rating": 0.40396128361149586
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -54.97277641610631,
+          36.500315639741814
+        ]
+      },
+      "properties": {
+        "name": "Location 20",
+        "description": "w9baA5vl9va99IhSsIJLfHy7ATjqNXiuOL0gQ2tVQgVsv4RAhC",
+        "category": "park",
+        "rating": 1.6599080237778152
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          137.26307104594963,
+          -17.021881564489448
+        ]
+      },
+      "properties": {
+        "name": "Location 21",
+        "description": "1wBTjCozfvZcUZGv6cHXAQbLSq2S22Uu3nOhakvHDBogBENVdV",
+        "category": "hotel",
+        "rating": 3.140593577197638
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          150.7059054299313,
+          -0.5660275040090141
+        ]
+      },
+      "properties": {
+        "name": "Location 22",
+        "description": "Dp6lzxE9QzyZvblOxtyZnW3JrpDu7jmQtjuCz7JzLiHsAi0IVJ",
+        "category": "museum",
+        "rating": 3.3069515982749174
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.49877977966162,
+          -57.71980351891999
+        ]
+      },
+      "properties": {
+        "name": "Location 23",
+        "description": "l6fR9NwWdGzFFHr3kjkDC89yh7x7o60uVcdQQZcbbJrzA9386Z",
+        "category": "hotel",
+        "rating": 0.905718836055529
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.96385867877902,
+          -9.24846925866008
+        ]
+      },
+      "properties": {
+        "name": "Location 24",
+        "description": "aow2KmgRPpGJ3RHjxN2bWWsGpjRF78KUzGU2XPwO8jvRlQJyX6",
+        "category": "park",
+        "rating": 4.85617926443417
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -55.52475490932653,
+          75.83154838526579
+        ]
+      },
+      "properties": {
+        "name": "Location 25",
+        "description": "y9oPVQ96PTZglWh1GaE9DMoGQzlFy1zN41VpVEwWntmZsBkUxX",
+        "category": "park",
+        "rating": 0.7380829517952647
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -112.52460031815478,
+          -22.85889387406739
+        ]
+      },
+      "properties": {
+        "name": "Location 26",
+        "description": "OFBxhtOtAFgowPGcW4Es4XlQeYDAfoa7CgGrGBJxh0pukYicfU",
+        "category": "hotel",
+        "rating": 2.8561357092080653
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -26.528305470310983,
+          13.433048242138838
+        ]
+      },
+      "properties": {
+        "name": "Location 27",
+        "description": "4cLsxMzlFxHO0MBsQ3mKdxHV77Kpvn2YxWQwL27Wh3V0PQKf3q",
+        "category": "museum",
+        "rating": 0.19833928135657986
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.04481846719028,
+          -85.09342114173722
+        ]
+      },
+      "properties": {
+        "name": "Location 28",
+        "description": "UI0UfRYOyMeiGFBv7My5Yq8n3rbKVPptnmoa4POQZKRNVygkWU",
+        "category": "museum",
+        "rating": 4.8381406969245955
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -68.2044876238225,
+          70.48397605030243
+        ]
+      },
+      "properties": {
+        "name": "Location 29",
+        "description": "wDXLkgY6mJDqKxQmLZqiPyasPTcyxJFcZ1H8AjHv4bxnH56JZS",
+        "category": "restaurant",
+        "rating": 1.3517642990245093
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.447691540899115,
+          58.18321003513117
+        ]
+      },
+      "properties": {
+        "name": "Location 30",
+        "description": "GtTOfHlilDIi16IgJLJq8H11ZaCi50gXrSAFqLU1U0ZtL6atnY",
+        "category": "restaurant",
+        "rating": 0.9331771211160178
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.023439924603252,
+          20.87160347955873
+        ]
+      },
+      "properties": {
+        "name": "Location 31",
+        "description": "YDIansXn4rrfgD7ewQpRn6OilO8FesC5BnXtpJb67qyrWCxZxp",
+        "category": "restaurant",
+        "rating": 2.1499591592021092
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          145.58029021362051,
+          27.43410357984733
+        ]
+      },
+      "properties": {
+        "name": "Location 32",
+        "description": "J4RJQySGjfZjB0JJMEUDkKw765hmgKySDFiFzduIXspPPVGJ7Q",
+        "category": "restaurant",
+        "rating": 0.34410201838703136
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          99.1334968999688,
+          -52.83960583607818
+        ]
+      },
+      "properties": {
+        "name": "Location 33",
+        "description": "nHfM8TCJeOpAVN5vKIzwAqgiVvgghtWWS7NTPrVabnj4M7Y3Qv",
+        "category": "park",
+        "rating": 0.5918367189338247
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -25.155018506978166,
+          68.44372057563677
+        ]
+      },
+      "properties": {
+        "name": "Location 34",
+        "description": "QZCWGGdSs6nGIvYb2n7wtU0hECSojpiBtSQOd17NUrMfJHM8SR",
+        "category": "park",
+        "rating": 1.8845969115478534
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.1794819957495406,
+          87.93609626338261
+        ]
+      },
+      "properties": {
+        "name": "Location 35",
+        "description": "j9T8TfIZCVR6KHmqhoLP7DjP1XNlwpRudvgHKe1fukFsNZ1NYT",
+        "category": "museum",
+        "rating": 1.4327118593269628
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.026361262770166,
+          -11.046447114601406
+        ]
+      },
+      "properties": {
+        "name": "Location 36",
+        "description": "m9067Mj4n39GjBjhpccbAKi9LKEn6VeVZTDbzjmegaiycJiEqb",
+        "category": "museum",
+        "rating": 4.416196472503948
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          83.955325840613,
+          -3.118333332230975
+        ]
+      },
+      "properties": {
+        "name": "Location 37",
+        "description": "xVzSlPmxqtVL8r2KZdlAKKM8rv2mlH9tWaEJmQwaWLa9WP62fi",
+        "category": "museum",
+        "rating": 4.568164339551598
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.5623299253431355,
+          -64.01037532541154
+        ]
+      },
+      "properties": {
+        "name": "Location 38",
+        "description": "zgkByehVltP77x0pc4aAzZUQav8mNEuCoHGoF9MPlclA3cAJl7",
+        "category": "museum",
+        "rating": 4.330597887373742
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.772912414683162,
+          -5.3422060936970865
+        ]
+      },
+      "properties": {
+        "name": "Location 39",
+        "description": "RcebRFDWyyvCEJeTgMzO9p5XftY4085zkKvigSeKoAqyWtO3pI",
+        "category": "museum",
+        "rating": 0.9263102070218576
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.72301549605766,
+          -24.27968472713573
+        ]
+      },
+      "properties": {
+        "name": "Location 40",
+        "description": "2xmNipnaJqF3kzcc6O0NgYUqQnEfCBozMKvvO8odgZYB2C4U9j",
+        "category": "park",
+        "rating": 0.92673378183868
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -94.42809533474106,
+          -75.41449010603048
+        ]
+      },
+      "properties": {
+        "name": "Location 41",
+        "description": "Sh9DQ4pS9zeRd7v6tWCqdygMyuDbG1yaajXlBPuUhlWSuE2uJQ",
+        "category": "restaurant",
+        "rating": 0.9483715594697173
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          155.5626243161891,
+          8.376717620868533
+        ]
+      },
+      "properties": {
+        "name": "Location 42",
+        "description": "CPqGPFpD5fiOA4dnU4unNEYiulbha6SBTzT1a41q2XziaEExre",
+        "category": "park",
+        "rating": 1.3780092478657546
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          142.32833073927856,
+          13.642555994476623
+        ]
+      },
+      "properties": {
+        "name": "Location 43",
+        "description": "MMk4NUC8PeqItxf6beMYaoEQtDBkLvh4R7riHEGEyO78kJlPvE",
+        "category": "park",
+        "rating": 0.24290132406927123
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -96.40494821535471,
+          -35.93146238734755
+        ]
+      },
+      "properties": {
+        "name": "Location 44",
+        "description": "hVWagXzqzzkd2v6TBgBm8BQrsONK9G2f7FL1GbJXfDJrYtxHe9",
+        "category": "restaurant",
+        "rating": 2.6364405826917094
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.399619777102032,
+          48.49418417256885
+        ]
+      },
+      "properties": {
+        "name": "Location 45",
+        "description": "0Cni8G6fEpTetqYKtI7zDyExT8bjeJ2D80YeytSzfvbEZT0YyO",
+        "category": "restaurant",
+        "rating": 2.7894482491765507
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -163.48940979876332,
+          19.137220543063606
+        ]
+      },
+      "properties": {
+        "name": "Location 46",
+        "description": "8Jq3qvjtLcwodr3HmXgoYOmiQdeME9H1xQt8ETQOdmnSeHUzHH",
+        "category": "restaurant",
+        "rating": 0.5975860630721008
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -173.49270066523317,
+          42.220258338577906
+        ]
+      },
+      "properties": {
+        "name": "Location 47",
+        "description": "DuIfgEE8oJF9RQDbjs5kxE4myO8uwcRKXbhCFZWvrxcEMK8bFY",
+        "category": "restaurant",
+        "rating": 4.458529763878331
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.56874767259296,
+          51.884756344998834
+        ]
+      },
+      "properties": {
+        "name": "Location 48",
+        "description": "GMpv5np2qMwl1o6DdDovOJfcYP8CKm3aC2vCHdhUwIB5jjTmPX",
+        "category": "museum",
+        "rating": 3.4914728219605315
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -95.60683645391185,
+          -29.172116272681187
+        ]
+      },
+      "properties": {
+        "name": "Location 49",
+        "description": "UMLou3yv5yJjThxDlfQW7ukoELpeE62UVojWDQC2OLq26GAhZj",
+        "category": "museum",
+        "rating": 0.7148254587142044
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -172.56291963012217,
+          -19.83100337009671
+        ]
+      },
+      "properties": {
+        "name": "Location 50",
+        "description": "iARx7aCXnYRMIRQ36HejRO3kB5601oWqUVfrkVCcwOlUgsSufH",
+        "category": "restaurant",
+        "rating": 3.3109885580620113
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.00641863028187,
+          2.920640628044879
+        ]
+      },
+      "properties": {
+        "name": "Location 51",
+        "description": "CijMrt9dEZ2ePiMI0PV6W9huW8CoaSEtEnZCzYTbkJG7U40zao",
+        "category": "museum",
+        "rating": 1.7252822488121766
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.737209204461664,
+          13.12108117557861
+        ]
+      },
+      "properties": {
+        "name": "Location 52",
+        "description": "7WULZ6CtMJiahM3fpzUIo8Sl0F14xSzpEjhGTFOpvIs2hwCk4N",
+        "category": "hotel",
+        "rating": 0.032082438560814275
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -7.636650402152128,
+          -5.328132825507765
+        ]
+      },
+      "properties": {
+        "name": "Location 53",
+        "description": "0ZyNM2ch8hfsfqCjHj3MjgRKV7F8IXCUY2kL81Wy83z1JfB3gG",
+        "category": "hotel",
+        "rating": 3.620257886119269
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          161.63146872348648,
+          -79.96381173521084
+        ]
+      },
+      "properties": {
+        "name": "Location 54",
+        "description": "On9qbrbaRY1yLfWLWt5YJW5OFGhSemUMM2GIGA9xdGU3AAK8oQ",
+        "category": "park",
+        "rating": 2.3374610542499608
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -108.67578820518021,
+          34.03281123430898
+        ]
+      },
+      "properties": {
+        "name": "Location 55",
+        "description": "KAK8fgF5Mufd2sw9Vv85tayjQGJsGUClQwya7TeMG5ZVPU11rk",
+        "category": "museum",
+        "rating": 1.6189117871565761
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -89.81934500344454,
+          36.00774692028925
+        ]
+      },
+      "properties": {
+        "name": "Location 56",
+        "description": "cQdUB2mkTcqJtK5kBa4zdpzoUk8d2uFkXOmvU1ruLW063C3tPE",
+        "category": "museum",
+        "rating": 3.236444612910266
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.0030702359919985,
+          52.56590925136061
+        ]
+      },
+      "properties": {
+        "name": "Location 57",
+        "description": "kNFy9Gb4kSowaTVAUYjE0AmuVKj3b6xWFGVwi7uTuXvR2EO16k",
+        "category": "hotel",
+        "rating": 0.007291309508459243
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -160.44792686999455,
+          -68.3887966427585
+        ]
+      },
+      "properties": {
+        "name": "Location 58",
+        "description": "WRkJuXcnw2UmhpwTja4ntU2fDqcpgH7uEaf1Uc9OuYwZ4pN4Rg",
+        "category": "park",
+        "rating": 0.31522653812534607
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.026478277191643,
+          26.51122755383352
+        ]
+      },
+      "properties": {
+        "name": "Location 59",
+        "description": "G8xWn4FXNOOoYxdUSVIJMF4FY6cDIN4Z0fHMdo27KY61aoZXCj",
+        "category": "hotel",
+        "rating": 3.2777109095036137
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          70.01695403988862,
+          20.567426441550353
+        ]
+      },
+      "properties": {
+        "name": "Location 60",
+        "description": "DTa3FJx5ywMAKKeKWQcKL6EP0j8Vuagz6IO0dfCcPCkqbqa6qU",
+        "category": "restaurant",
+        "rating": 2.4347806166267727
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.11061298116186,
+          58.01768115011265
+        ]
+      },
+      "properties": {
+        "name": "Location 61",
+        "description": "YNouCUCFwjCNIEo7WsrkaP0Dab9ljXkCi1lQsqIl6PI8BMKQsj",
+        "category": "restaurant",
+        "rating": 2.4365763663047835
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -154.47518439035522,
+          -24.209228016404637
+        ]
+      },
+      "properties": {
+        "name": "Location 62",
+        "description": "kFMnLxLTatqk7C8Ui7o1bTFTDuR6gyDSe4jJEphMxc5hZfR2li",
+        "category": "hotel",
+        "rating": 3.3441039440999876
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.11109315521432,
+          -52.12453014687215
+        ]
+      },
+      "properties": {
+        "name": "Location 63",
+        "description": "HL5MaspZPIviRWPQHp0bLSz4p2L0qAcjbG3YniJ4WzNHFNNRao",
+        "category": "park",
+        "rating": 2.437301882950341
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -136.00122155087732,
+          10.585349691493477
+        ]
+      },
+      "properties": {
+        "name": "Location 64",
+        "description": "hovN8wX1q3YGkzIaJIa9IyAxnyGCMh9Haf1QT8492UBgwVVrCA",
+        "category": "park",
+        "rating": 1.5644363974037323
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          161.3695182430377,
+          -20.248108345523306
+        ]
+      },
+      "properties": {
+        "name": "Location 65",
+        "description": "OdwvQ4VfGCWegVcKG5p9gtRHP5GBVlfIQkiWoHKyoj7pCxSrWV",
+        "category": "park",
+        "rating": 3.583070127828938
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -113.43622542780727,
+          -20.57707116430069
+        ]
+      },
+      "properties": {
+        "name": "Location 66",
+        "description": "jSsfysRTQunNxNZzWlUgB2Lbu8HY0uC4XyX7NhcQXqTrXjMVO3",
+        "category": "restaurant",
+        "rating": 4.7654808132806625
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          23.350557784906158,
+          -32.98526579487801
+        ]
+      },
+      "properties": {
+        "name": "Location 67",
+        "description": "1jlscsfI5S1ZgQ6PnuR2NrVPSb5bjWyjvSeYv4T7dD3aAOviZo",
+        "category": "museum",
+        "rating": 1.5272231740544362
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.86046530192678,
+          -2.447707322771919
+        ]
+      },
+      "properties": {
+        "name": "Location 68",
+        "description": "kxqWQNxGGDTtNpdEREO5NGmLIzAfjxK5L6BmMMm4BskE4tePXZ",
+        "category": "park",
+        "rating": 0.7099501764170468
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.98547013918224,
+          41.45684265179156
+        ]
+      },
+      "properties": {
+        "name": "Location 69",
+        "description": "88t8zPnYdnzxWnKG7vXuEpoa1ZfUbH2aW0aATYDAYrbJleUdAJ",
+        "category": "hotel",
+        "rating": 3.10688193147014
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          174.01310313683933,
+          58.560148394434236
+        ]
+      },
+      "properties": {
+        "name": "Location 70",
+        "description": "A1x0W2fLe8SSrYqPetDkCJlGI8BrvWjQtOmDjgr6BL6ssxpJkA",
+        "category": "hotel",
+        "rating": 4.640198181007978
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.68058443248766,
+          -16.544064095253376
+        ]
+      },
+      "properties": {
+        "name": "Location 71",
+        "description": "7RlVXI3cHEFm9xelUC1m9GsQgJ0Y8RP7rkmBzo5bRLQa7Eb27K",
+        "category": "park",
+        "rating": 3.9159232569672078
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.711629057178385,
+          28.693096060950282
+        ]
+      },
+      "properties": {
+        "name": "Location 72",
+        "description": "ZoaqztZDrpuFYhuhtroPPiP1yTLSmw8YyFTcXmXSvmo9TnotTq",
+        "category": "park",
+        "rating": 1.211653633075791
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -171.734426514112,
+          8.234246254353621
+        ]
+      },
+      "properties": {
+        "name": "Location 73",
+        "description": "sLBeXSqifksQ6Ki2NlOENoldaAWV1wcFAU2HzYCrIWfCvhzKgE",
+        "category": "park",
+        "rating": 4.082842610272165
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -147.14524637914,
+          72.08621538602424
+        ]
+      },
+      "properties": {
+        "name": "Location 74",
+        "description": "toavSjtW7FoR08RpRe623BE8c94XoCl6sGvb0nYhNOVMWT49u2",
+        "category": "restaurant",
+        "rating": 2.810498088586899
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.25646797705373,
+          26.329529411092423
+        ]
+      },
+      "properties": {
+        "name": "Location 75",
+        "description": "I7yI6pBKIxyCvDBZ7Wp3rAprXrdUW3PRpSYLmzR5BBsT7fMB3y",
+        "category": "museum",
+        "rating": 0.5720534270419064
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -172.07865634601944,
+          -4.677356637794205
+        ]
+      },
+      "properties": {
+        "name": "Location 76",
+        "description": "Ty1vrLGfHf7NI5mk77d86GMQhi8aL1iCGMjyZeOsI6I6rlMNaN",
+        "category": "hotel",
+        "rating": 0.6553038467649608
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.35656701278242,
+          -14.107087349982379
+        ]
+      },
+      "properties": {
+        "name": "Location 77",
+        "description": "N4GkDhVzbwDFY2XSO2inu9ZbEaeLnsc0PlEN8xQaebNaJO3nSS",
+        "category": "park",
+        "rating": 0.7342307001443271
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -26.530026158669415,
+          50.659750760708704
+        ]
+      },
+      "properties": {
+        "name": "Location 78",
+        "description": "J4zW3WbcXlDZNC1TR1pjjxoIfqqT7vvDOlPvU9DfgBwJfXqWYs",
+        "category": "restaurant",
+        "rating": 4.150927233098951
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          79.12294666493904,
+          -13.658366174497473
+        ]
+      },
+      "properties": {
+        "name": "Location 79",
+        "description": "QYztMYueHYBJvdk0KVlidSGawlQYB7BtU0CC9rsM8ONMKcPmuv",
+        "category": "park",
+        "rating": 3.2096133318743822
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          59.25501652500259,
+          69.28815205484807
+        ]
+      },
+      "properties": {
+        "name": "Location 80",
+        "description": "DPYz9IKKThId4k9o9JZor0bNKmtNDxsrD7JAG6SVOCChwsgo1Q",
+        "category": "park",
+        "rating": 3.9882918120218336
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -110.99851454891491,
+          -29.5594741442619
+        ]
+      },
+      "properties": {
+        "name": "Location 81",
+        "description": "YOxPw5rMD4fmN04yXn8emWjIvYMzjkTvMZE86EbW9bRA66AEIF",
+        "category": "park",
+        "rating": 2.2727440164161496
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.20043327834064,
+          21.192686245742294
+        ]
+      },
+      "properties": {
+        "name": "Location 82",
+        "description": "hSSSzrZows6NiOJ0RmjuVKdv1fN6cyWN4EQMxLBic9ycbcbuqg",
+        "category": "museum",
+        "rating": 4.395503128487102
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -45.49678321826167,
+          41.0835460853726
+        ]
+      },
+      "properties": {
+        "name": "Location 83",
+        "description": "Ip2o4QqHkquqelZzVrbpwVfwRzDS6Kw9qqKHPiaKDQeS02XE7w",
+        "category": "hotel",
+        "rating": 2.347075333129304
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -155.95710170951182,
+          -88.4793716301616
+        ]
+      },
+      "properties": {
+        "name": "Location 84",
+        "description": "AVOA0PP1iwHkbz1JX6tJUb3NB6A3HDtwzpfp0j0INlUbU9Dys7",
+        "category": "museum",
+        "rating": 1.284180369063691
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          58.64349532183732,
+          35.676584702618584
+        ]
+      },
+      "properties": {
+        "name": "Location 85",
+        "description": "43wzgNgwyyzKy70wDYwuMwnOjdVFpEADhaCxr7eZop6LMhWek5",
+        "category": "museum",
+        "rating": 2.5136660114428997
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -49.94056690339812,
+          4.08254415777472
+        ]
+      },
+      "properties": {
+        "name": "Location 86",
+        "description": "8WQOCAGQSj8vG3PTNkXCWTx5rCUvYHA3Aqx0dAT8Jqxrvjv5DX",
+        "category": "hotel",
+        "rating": 3.1372676187123503
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.90357534343127,
+          59.411157872558874
+        ]
+      },
+      "properties": {
+        "name": "Location 87",
+        "description": "heZj5D0IJdzvjzLZK4eq3JRnww9V3wDfXQPk1aOAP2ZbpK8ubr",
+        "category": "restaurant",
+        "rating": 1.1562738378839643
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.77000917878479,
+          84.85859176468426
+        ]
+      },
+      "properties": {
+        "name": "Location 88",
+        "description": "Xz9S2yF7SOLgSP30mqcgHhcbID43vl2X8FrXn6AbOto9RAeEq3",
+        "category": "museum",
+        "rating": 4.686775562036365
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          99.01006534709182,
+          16.472706110670288
+        ]
+      },
+      "properties": {
+        "name": "Location 89",
+        "description": "sFMVhEzjbIqf62pfAm6J8nDnXUt1h2OEEcvGzYwoVLWSdOCT65",
+        "category": "hotel",
+        "rating": 2.5827897698311997
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          94.88050592900117,
+          77.63445126423633
+        ]
+      },
+      "properties": {
+        "name": "Location 90",
+        "description": "dOXOrqAqimYsDPndL31k0ddn8MVGRNLVvXpc4iWaTN5pEfptzo",
+        "category": "museum",
+        "rating": 4.321200132457125
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.43692997400191,
+          20.246580626106223
+        ]
+      },
+      "properties": {
+        "name": "Location 91",
+        "description": "NcJvNiqsdV2mflPVKgMSPvH2yymhzW6b2hNFJq5ti5oAnMp7KW",
+        "category": "restaurant",
+        "rating": 2.5607037158501944
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.81546330989624,
+          82.3681336113292
+        ]
+      },
+      "properties": {
+        "name": "Location 92",
+        "description": "2AkTtJ2QmoFRaFKbiglNAmoKfAIMDHhNy0FgbJk11GMr5kAEqR",
+        "category": "museum",
+        "rating": 0.938450011404498
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -18.820700975350206,
+          -24.37224360160033
+        ]
+      },
+      "properties": {
+        "name": "Location 93",
+        "description": "o9IyWd8dOIj0UrytPR6arPetdkZw6cZTgrkeAUoFkm10PONr1C",
+        "category": "restaurant",
+        "rating": 3.09010903725641
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.45433825311443,
+          21.21103486801566
+        ]
+      },
+      "properties": {
+        "name": "Location 94",
+        "description": "wMAhAjWiXQ6F1t2TYmbKBwHpFC1cCIpDiW367rbtK8OSNp5eJ8",
+        "category": "restaurant",
+        "rating": 1.7115322350259532
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.89216327289704,
+          39.065530479456584
+        ]
+      },
+      "properties": {
+        "name": "Location 95",
+        "description": "VbjRNxcmZOFV5dpEVG7iZDQa7aiNoer8dBSvtbksL3BfqNSPNK",
+        "category": "park",
+        "rating": 3.450173410806098
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          78.45056323849155,
+          -58.6554221564048
+        ]
+      },
+      "properties": {
+        "name": "Location 96",
+        "description": "9FvcLJnQfOFlj7bSHk1iV6heHEGJ620i9CccAeV36qUidQ8xBQ",
+        "category": "restaurant",
+        "rating": 0.16987279532722055
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.21160046491082,
+          14.242876718961128
+        ]
+      },
+      "properties": {
+        "name": "Location 97",
+        "description": "1lciQU1MPv0ekEMZ3SLL26buyVW0SkaRlIFqcZLXDF9I1RuA6e",
+        "category": "park",
+        "rating": 4.798952576456638
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -61.88176790375023,
+          -59.161107593347715
+        ]
+      },
+      "properties": {
+        "name": "Location 98",
+        "description": "t739JMHKlTle6T3RfoLzMJXHx5PCBp9pEVTzRZJ6k2uflVs9kS",
+        "category": "park",
+        "rating": 4.160491382842055
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.296330905721106,
+          -7.734713179638334
+        ]
+      },
+      "properties": {
+        "name": "Location 99",
+        "description": "XtxVc9ES3882qgZsWy82V2MPA5aMuoI87y76SI1tBtvOTKwg1n",
+        "category": "hotel",
+        "rating": 3.957114923205708
+      }
+    }
+  ]
+}

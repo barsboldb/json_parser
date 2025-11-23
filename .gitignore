@@ -2,3 +2,6 @@ dist/
 
 # MacOS specific
 .DS_store
+
+# Benchmark compiled binaries
+benchmarks/bin/

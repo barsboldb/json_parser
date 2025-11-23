@@ -1,0 +1,16 @@
+{
+  "english": "Hello World",
+  "chinese": "你好世界",
+  "japanese": "こんにちは世界",
+  "arabic": "مرحبا بالعالم",
+  "emoji": "👋🌍🚀💻🎉",
+  "mixed": "Hello 世界 🌍 مرحبا",
+  "specialChars": "!@#$%^&*()_+-=[]{}|;':\",./<>?",
+  "escaped": "Line1\nLine2\tTabbed\r\nWindows\\Path",
+  "array": [
+    "emoji🎉",
+    "中文",
+    "العربية",
+    "日本語"
+  ]
+}

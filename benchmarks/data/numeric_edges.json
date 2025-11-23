@@ -1,0 +1,22 @@
+{
+  "zero": 0,
+  "negativeZero": 0,
+  "integer": 42,
+  "negative": -42,
+  "float": 3.14159,
+  "negativeFloat": -3.14159,
+  "exponential": 12300000000,
+  "negativeExponential": -1.23e-10,
+  "large": 1.7976931348623157e+308,
+  "small": 2.2250738585072014e-308,
+  "arrays": [
+    0,
+    0,
+    1,
+    -1,
+    3.14,
+    -3.14,
+    10000000000,
+    1e-10
+  ]
+}

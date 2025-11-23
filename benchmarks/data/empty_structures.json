@@ -1,0 +1,24 @@
+{
+  "emptyObject": {},
+  "emptyArray": [],
+  "nullValue": null,
+  "nested": {
+    "empty": {},
+    "emptyArr": [],
+    "null": null
+  },
+  "arrayOfEmpty": [
+    {},
+    {},
+    []
+  ],
+  "mixed": {
+    "a": {},
+    "b": [],
+    "c": null,
+    "d": {
+      "e": {},
+      "f": []
+    }
+  }
+}

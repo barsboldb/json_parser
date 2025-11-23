@@ -1,0 +1,17 @@
+{
+  "name": "John Doe",
+  "age": 30,
+  "email": "john.doe@example.com",
+  "active": true,
+  "balance": 1234.56,
+  "tags": [
+    "user",
+    "premium",
+    "verified"
+  ],
+  "address": {
+    "street": "123 Main St",
+    "city": "New York",
+    "zip": "10001"
+  }
+}
