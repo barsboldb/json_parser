@@ -205,9 +205,15 @@ test: build-tests
 
 # Build benchmark binary with memory tracking
 $(BENCH_DIR)/bin/bench_parser: $(BENCH_DIR)/src/bench_parser.c $(BENCH_DIR)/src/mem_track.c $(LIB_SOURCES) $(LIB_HEADERS)
-	@echo "$(YELLOW)Building performance benchmark...$(NC)"
+	@echo "$(YELLOW)Building performance benchmark with memory tracking...$(NC)"
 	@mkdir -p $(BENCH_DIR)/bin
-	$(CC) $(CFLAGS_RELEASE) $(BENCH_DIR)/src/bench_parser.c $(BENCH_DIR)/src/mem_track.c \
+	$(CC) $(CFLAGS_RELEASE) \
+		-DBENCHMARK_MEMORY_TRACKING \
+		-Dmalloc=mem_track_malloc \
+		-Dcalloc=mem_track_calloc \
+		-Drealloc=mem_track_realloc \
+		-Dfree=mem_track_free \
+		$(BENCH_DIR)/src/bench_parser.c $(BENCH_DIR)/src/mem_track.c \
 		$(LIB_SOURCES) -I$(INC_DIR) -I$(BENCH_DIR)/include -o $@ $(LDFLAGS_RELEASE)
 
 # Build benchmarks

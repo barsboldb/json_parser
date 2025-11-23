@@ -105,13 +105,20 @@ cd "$PROJECT_DIR"
 make clean > /dev/null 2>&1 || true
 make release > /dev/null 2>&1
 
-# Compile benchmark binary
+# Compile mem_track.c WITHOUT BENCHMARK_MEMORY_TRACKING (to get real malloc pointers)
+gcc -O3 -march=native -c \
+    -I"$BENCHMARK_DIR/include" \
+    -o "$BENCHMARK_DIR/bin/mem_track.o" \
+    "$BENCHMARK_DIR/src/mem_track.c"
+
+# Compile everything else WITH BENCHMARK_MEMORY_TRACKING (to redirect malloc to counters)
 gcc -O3 -march=native -flto \
+    -DBENCHMARK_MEMORY_TRACKING \
     -I"$PROJECT_DIR/include" \
     -I"$BENCHMARK_DIR/include" \
     -o "$BENCHMARK_DIR/bin/bench_parser" \
     "$BENCHMARK_DIR/src/bench_parser.c" \
-    "$BENCHMARK_DIR/src/mem_track.c" \
+    "$BENCHMARK_DIR/bin/mem_track.o" \
     "$PROJECT_DIR/src/lexer.c" \
     "$PROJECT_DIR/src/parser.c" \
     "$PROJECT_DIR/src/json.c"
