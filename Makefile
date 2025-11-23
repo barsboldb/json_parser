@@ -45,8 +45,7 @@ TEST_SOURCES = $(wildcard $(TEST_DIR)/test_*.c)
 TEST_BINARIES = $(patsubst $(TEST_DIR)/%.c,$(BUILD_DIR)/%,$(TEST_SOURCES))
 
 # Benchmark binaries
-BENCH_BINARIES = $(BENCH_DIR)/bin/bench_our_parser \
-                 $(BENCH_DIR)/bin/bench_memory
+BENCH_BINARIES = $(BENCH_DIR)/bin/bench_parser
 
 # Compiler flags
 CFLAGS_BASE = -Wall -Wextra -I$(INC_DIR)
@@ -204,16 +203,10 @@ test: build-tests
 # Benchmarks
 # ============================================================================
 
-$(BENCH_DIR)/bin/bench_our_parser: $(BENCH_DIR)/src/bench_our_parser.c $(LIB_SOURCES) $(LIB_HEADERS)
+$(BENCH_DIR)/bin/bench_parser: $(BENCH_DIR)/src/bench_parser.c $(BENCH_DIR)/src/mem_track.c $(LIB_SOURCES) $(LIB_HEADERS)
 	@echo "$(YELLOW)Building performance benchmark...$(NC)"
 	@mkdir -p $(BENCH_DIR)/bin
-	$(CC) $(CFLAGS_RELEASE) $< $(LIB_SOURCES) -I$(INC_DIR) -o $@ $(LDFLAGS_RELEASE)
-
-$(BENCH_DIR)/bin/bench_memory: $(BENCH_DIR)/src/bench_memory.c $(LIB_SOURCES) $(LIB_HEADERS)
-	@echo "$(YELLOW)Building memory benchmark with tracked allocations...$(NC)"
-	@mkdir -p $(BENCH_DIR)/bin
-	@mkdir -p $(BENCH_DIR)/include
-	$(CC) $(CFLAGS_RELEASE) $< -DBENCHMARK_MEMORY_TRACKING \
+	$(CC) $(CFLAGS_RELEASE) $(BENCH_DIR)/src/bench_parser.c $(BENCH_DIR)/src/mem_track.c \
 		$(LIB_SOURCES) -I$(INC_DIR) -I$(BENCH_DIR)/include -o $@ $(LDFLAGS_RELEASE)
 
 # Build benchmarks
