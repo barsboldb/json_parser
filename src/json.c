@@ -22,17 +22,16 @@ int json_object_cmp(json_value_t *a, json_value_t *b) {
 
   // For each entry in a, check if it exists in b with the same value
   for (size_t i = 0; i < a->object.capacity; i++) {
-    hash_entry_t *entry = a->object.buckets[i];
-    while (entry) {
+    hash_bucket_t *bucket = &a->object.buckets[i];
+    for (size_t j = 0; j < bucket->len; j++) {
+      hash_entry_t *entry = &bucket->items[j];
       // Look up the same key in b
       json_value_t *b_val = hash_table_get(&b->object, entry->key, entry->key_len);
       if (!b_val) return -1;  // Key not found in b
 
       // Compare values
-      int res = json_value_cmp(entry->value, b_val);
+      int res = json_value_cmp(&entry->value, b_val);
       if (res != 0) return res;
-
-      entry = entry->next;
     }
   }
 
@@ -106,14 +105,13 @@ int hash_table_init_inplace(hash_table_t *table, size_t initial_size) {
     capacity <<= 1;
   }
 
-  table->buckets = calloc(capacity, sizeof(hash_entry_t *));
+  table->buckets = calloc(capacity, sizeof(hash_bucket_t));
   if (!table->buckets) {
     return -1;
   }
 
   table->capacity = capacity;
   table->size = 0;
-  table->load_factor = 0.75f;
   return 0;
 }
 
@@ -135,15 +133,13 @@ void hash_table_free_entries(hash_table_t *table) {
   if (!table || !table->buckets) return;
 
   for (size_t i = 0; i < table->capacity; i++) {
-    hash_entry_t *entry = table->buckets[i];
-    while (entry) {
-      hash_entry_t *next = entry->next;
+    hash_bucket_t *bucket = &table->buckets[i];
+    for (size_t j = 0; j < bucket->len; j++) {
+      hash_entry_t *entry = &bucket->items[j];
       free(entry->key);
-      json_value_free(entry->value);  // Free the value
-      free(entry->value);             // Free the value pointer
-      free(entry);
-      entry = next;
+      json_value_free(&entry->value);  // Free nested content (value is embedded)
     }
+    free(bucket->items);  // Free the bucket's items array
   }
 
   free(table->buckets);
@@ -159,8 +155,10 @@ void hash_table_free(hash_table_t *table) {
   free(table);
 }
 
-int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json_value_t *value) {
-  if ((float)table->size / table->capacity >= table->load_factor) {
+#define HASH_TABLE_LOAD_FACTOR 0.75f
+
+int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json_value_t value) {
+  if ((float)table->size / table->capacity >= HASH_TABLE_LOAD_FACTOR) {
     if (hash_table_resize(table) != 0) {
       return -1;
     }
@@ -168,33 +166,39 @@ int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json
 
   uint32_t hash = hash_string(key, key_len);
   size_t index = hash & (table->capacity - 1);
-  
-  hash_entry_t *entry = table->buckets[index];
-  while(entry) {
-    if (entry->key_len == key_len && memcmp(entry->key, key, key_len) == 0) {
+
+  hash_bucket_t *bucket = &table->buckets[index];
+
+  // Check for duplicate key
+  for (size_t i = 0; i < bucket->len; i++) {
+    if (bucket->items[i].key_len == key_len &&
+        memcmp(bucket->items[i].key, key, key_len) == 0) {
       return 1;  // Duplicate key found
     }
-    entry = entry->next;
   }
 
-  hash_entry_t *new_entry = malloc(sizeof(hash_entry_t));
-  if (!new_entry) return -1;
-
-  new_entry->key = malloc(key_len + 1);
-  if (!new_entry->key) {
-    free(new_entry);
-    return -1;
+  // Grow bucket array if needed
+  if (bucket->len >= bucket->cap) {
+    size_t new_cap = bucket->cap == 0 ? 2 : bucket->cap * 2;
+    hash_entry_t *new_items = realloc(bucket->items, new_cap * sizeof(hash_entry_t));
+    if (!new_items) return -1;
+    bucket->items = new_items;
+    bucket->cap = new_cap;
   }
 
-  memcpy(new_entry->key, key, key_len);
-  new_entry->key[key_len] = '\0';
-  new_entry->key_len = key_len;
-  new_entry->value = value;
+  // Allocate and copy key
+  char *key_copy = malloc(key_len + 1);
+  if (!key_copy) return -1;
+  memcpy(key_copy, key, key_len);
+  key_copy[key_len] = '\0';
 
-  new_entry->next = table->buckets[index];
-  table->buckets[index] = new_entry;
+  // Add entry to bucket
+  hash_entry_t *entry = &bucket->items[bucket->len++];
+  entry->key = key_copy;
+  entry->key_len = key_len;
+  entry->value = value;  // copy by value
+
   table->size++;
-
   return 0;
 }
 
@@ -213,16 +217,8 @@ void json_object_set(json_value_t *obj, char *key, json_value_t val) {
     return;
   }
 
-  // Allocate value on heap for hash table storage
-  json_value_t *heap_val = malloc(sizeof(json_value_t));
-  if (!heap_val) return;
-  *heap_val = val;
-
-  // Insert into hash table (key is copied by hash_table_insert)
-  int result = hash_table_insert(&obj->object, key, key_len, heap_val);
-  if (result != 0) {
-    free(heap_val);
-  }
+  // Insert into hash table (key is copied, value is copied by value)
+  hash_table_insert(&obj->object, key, key_len, val);
   free(key);  // hash_table_insert copies the key
 }
 
@@ -230,12 +226,12 @@ json_value_t *hash_table_get(hash_table_t *table, const char *key, size_t key_le
   uint32_t hash = hash_string(key, key_len);
   size_t index = hash & (table->capacity - 1);
 
-  hash_entry_t *entry = table->buckets[index];
-  while (entry) {
+  hash_bucket_t *bucket = &table->buckets[index];
+  for (size_t i = 0; i < bucket->len; i++) {
+    hash_entry_t *entry = &bucket->items[i];
     if (entry->key_len == key_len && memcmp(entry->key, key, key_len) == 0) {
-      return entry->value;
+      return &entry->value;  // return pointer to embedded value
     }
-    entry = entry->next;
   }
 
   return NULL;
@@ -245,28 +241,23 @@ int hash_table_delete(hash_table_t *table, const char *key, size_t key_len) {
   uint32_t hash = hash_string(key, key_len);
   size_t index = hash & (table->capacity - 1);
 
-  hash_entry_t *entry = table->buckets[index];
-  hash_entry_t *prev = NULL;
+  hash_bucket_t *bucket = &table->buckets[index];
 
-  while (entry) {
+  for (size_t i = 0; i < bucket->len; i++) {
+    hash_entry_t *entry = &bucket->items[i];
     if (entry->key_len == key_len && memcmp(entry->key, key, key_len) == 0) {
-      // Found the entry to delete
-      if (prev) {
-        prev->next = entry->next;
-      } else {
-        table->buckets[index] = entry->next;
-      }
-
-      // Free the entry
+      // Free the entry's data
       free(entry->key);
-      json_value_free(entry->value);
-      free(entry->value);
-      free(entry);
+      json_value_free(&entry->value);
+
+      // Move last entry to this position (swap-remove)
+      if (i < bucket->len - 1) {
+        bucket->items[i] = bucket->items[bucket->len - 1];
+      }
+      bucket->len--;
       table->size--;
       return 0;
     }
-    prev = entry;
-    entry = entry->next;
   }
 
   return -1;  // Key not found

@@ -299,10 +299,36 @@
                     <canvas id="progressionTimeChart"></canvas>
                 </div>
             </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Memory Allocations Over Time</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">Total allocations (malloc + calloc + realloc) across commits. Lower is better.</p>
+                <div class="chart-wrapper">
+                    <canvas id="progressionAllocChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Allocation Count by File Across Commits</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">Each line shows how a file's allocation count changed across commits.</p>
+                <div class="chart-wrapper" style="height: 500px;">
+                    <canvas id="fileAllocProgressionChart"></canvas>
+                </div>
+            </div>
         </div>
 
         <div id="memory" class="tab-content">
             <div id="memoryWarnings"></div>
+            <div class="chart-container">
+                <h2 class="chart-title">Memory Allocations by Test File</h2>
+                <div class="chart-wrapper">
+                    <canvas id="allocCountChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Allocation Breakdown (malloc/calloc/realloc)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="allocBreakdownChart"></canvas>
+                </div>
+            </div>
             <div class="chart-container">
                 <h2 class="chart-title">RSS (Resident Set Size) by Test File</h2>
                 <div class="chart-wrapper">
@@ -699,6 +725,13 @@
             const rssPeak = latest.memory.map(row => row.rss_peak);
             const leaks = latest.memory.map(row => row.leaked);
 
+            // Allocation counts
+            const mallocCount = latest.memory.map(row => row.malloc_count || 0);
+            const callocCount = latest.memory.map(row => row.calloc_count || 0);
+            const reallocCount = latest.memory.map(row => row.realloc_count || 0);
+            const freeCount = latest.memory.map(row => row.free_count || 0);
+            const totalAllocs = mallocCount.map((m, i) => m + callocCount[i] + reallocCount[i]);
+
             // Convert bytes to MB for better readability
             const toMB = (bytes) => bytes / (1024 * 1024);
             const rssStartMB = rssStart.map(toMB);
@@ -708,9 +741,87 @@
 
             const warnings = document.getElementById('memoryWarnings');
             const totalLeaks = leaks.reduce((sum, l) => sum + l, 0);
+            const hasAllocData = totalAllocs.some(a => a > 0);
 
-            // Info about RSS tracking
-            warnings.innerHTML = `<div class="success">✓ RSS (Resident Set Size) tracking active - showing actual process memory usage</div>`;
+            // Info about tracking
+            warnings.innerHTML = hasAllocData
+                ? `<div class="success">✓ Memory allocation tracking active - showing malloc/calloc/realloc/free counts</div>`
+                : `<div class="warning">⚠ Allocation counts not available for this benchmark run</div>`;
+
+            // Allocation Count Chart (Total allocations vs frees)
+            if (charts.allocCount) charts.allocCount.destroy();
+            charts.allocCount = new Chart(document.getElementById('allocCountChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'Total Allocations',
+                            data: totalAllocs,
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'Frees',
+                            data: freeCount,
+                            backgroundColor: colors.success
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Count'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Allocation Breakdown Chart (malloc/calloc/realloc stacked)
+            if (charts.allocBreakdown) charts.allocBreakdown.destroy();
+            charts.allocBreakdown = new Chart(document.getElementById('allocBreakdownChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'malloc',
+                            data: mallocCount,
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'calloc',
+                            data: callocCount,
+                            backgroundColor: colors.success
+                        },
+                        {
+                            label: 'realloc',
+                            data: reallocCount,
+                            backgroundColor: colors.warning
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Count'
+                            }
+                        }
+                    }
+                }
+            });
 
             // RSS Chart (Start vs End)
             if (charts.rss) charts.rss.destroy();
@@ -1296,6 +1407,136 @@
                                 display: true,
                                 text: 'Parse Time (ms)'
                             }
+                        }
+                    }
+                }
+            });
+
+            // Allocation progression chart
+            let allocations;
+            if (selectedFile) {
+                allocations = benchmarkData.results.map(r => {
+                    const row = r.memory.find(m => m.file === selectedFile);
+                    if (!row) return null;
+                    return (row.malloc_count || 0) + (row.calloc_count || 0) + (row.realloc_count || 0);
+                }).reverse();
+            } else {
+                allocations = benchmarkData.results.map(r => {
+                    const total = r.memory.reduce((sum, m) => {
+                        return sum + (m.malloc_count || 0) + (m.calloc_count || 0) + (m.realloc_count || 0);
+                    }, 0);
+                    return total / r.memory.length;
+                }).reverse();
+            }
+
+            if (charts.progressionAlloc) charts.progressionAlloc.destroy();
+            charts.progressionAlloc = new Chart(document.getElementById('progressionAllocChart'), {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                            label: 'Total Allocations',
+                            data: allocations,
+                            borderColor: colors.warning,
+                            backgroundColor: colors.warning + '33',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.parsed.y;
+                                    if (val >= 1000000) return `${context.dataset.label}: ${(val/1000000).toFixed(2)}M`;
+                                    if (val >= 1000) return `${context.dataset.label}: ${(val/1000).toFixed(2)}K`;
+                                    return `${context.dataset.label}: ${val}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Allocation Count' }
+                        }
+                    }
+                }
+            });
+
+            // File allocation progression chart (each file as a line across commits)
+            renderFileAllocProgressionChart();
+        }
+
+        function renderFileAllocProgressionChart() {
+            const latest = benchmarkData.results[0];
+            const files = latest.memory.map(row => row.file);
+            const commits = benchmarkData.results.map(r => r.entry.name.slice(-6)).reverse();
+
+            const fileColors = [
+                '#58a6ff', '#f778ba', '#d29922', '#f85428', '#a371f7',
+                '#56d364', '#79c0ff', '#ffa657', '#ec6cb9', '#e3b341',
+                '#ff7b72', '#7ee787', '#a5d6ff', '#ffc8dd', '#bde0fe'
+            ];
+
+            const datasets = files.map((file, idx) => {
+                const allocs = benchmarkData.results.map(r => {
+                    const row = r.memory.find(m => m.file === file);
+                    if (!row) return null;
+                    return (row.malloc_count || 0) + (row.calloc_count || 0) + (row.realloc_count || 0);
+                }).reverse();
+
+                return {
+                    label: file,
+                    data: allocs,
+                    borderColor: fileColors[idx % fileColors.length],
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 7
+                };
+            });
+
+            if (charts.fileAllocProgression) charts.fileAllocProgression.destroy();
+            charts.fileAllocProgression = new Chart(document.getElementById('fileAllocProgressionChart'), {
+                type: 'line',
+                data: { labels: commits, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right',
+                            labels: { usePointStyle: true, boxWidth: 8, padding: 10, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.parsed.y;
+                                    if (val >= 1000000) return `${context.dataset.label}: ${(val/1000000).toFixed(2)}M`;
+                                    if (val >= 1000) return `${context.dataset.label}: ${(val/1000).toFixed(2)}K`;
+                                    return `${context.dataset.label}: ${val}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Allocation Count' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Commits (oldest → newest)' }
                         }
                     }
                 }

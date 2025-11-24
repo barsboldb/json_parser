@@ -26,22 +26,25 @@ typedef enum {
   JSON_OBJECT,
 } json_type_t;
 
+// Forward declarations - only for pointers
 typedef struct json_value json_value_t;
+typedef struct hash_entry hash_entry_t;
+typedef struct hash_bucket hash_bucket_t;
 
-typedef struct hash_entry {
-  char *key;
-  size_t key_len;
-  json_value_t *value;
-  struct hash_entry *next;
-} hash_entry_t;
+// hash_bucket only contains pointer to entries, so can be defined now
+struct hash_bucket {
+  hash_entry_t *items;  // pointer is OK with incomplete type
+  size_t len;
+  size_t cap;
+};
 
 typedef struct {
-  hash_entry_t **buckets;
+  hash_bucket_t *buckets;
   size_t capacity;
   size_t size;
-  float load_factor;
 } hash_table_t;
 
+// Now json_value is complete
 struct json_value {
   json_type_t type;
   union {
@@ -55,6 +58,13 @@ struct json_value {
     } array;
     hash_table_t object;
   };
+};
+
+// Now hash_entry can use json_value_t by value
+struct hash_entry {
+  char *key;
+  size_t key_len;
+  json_value_t value;  // stored by value
 };
 
 
@@ -73,30 +83,46 @@ hash_table_t *hash_table_init(size_t);
 int hash_table_init_inplace(hash_table_t *table, size_t initial_size);
 void hash_table_free(hash_table_t *);
 void hash_table_free_entries(hash_table_t *);
-int hash_table_insert(hash_table_t *, const char *, size_t , json_value_t *);
+int hash_table_insert(hash_table_t *, const char *, size_t, json_value_t);
 int hash_table_delete(hash_table_t *, const char *, size_t);
 json_value_t *hash_table_get(hash_table_t *, const char *, size_t);
-static int hash_table_resize(hash_table_t* table) {
+
+// Resize hash table when load factor exceeded
+static int hash_table_resize(hash_table_t *table) {
   size_t new_capacity = table->capacity * 2;
-  hash_entry_t** new_buckets = (hash_entry_t **)calloc(new_capacity, sizeof(hash_entry_t*));
+  hash_bucket_t *new_buckets = calloc(new_capacity, sizeof(hash_bucket_t));
   if (!new_buckets) return -1;
 
-  // Rehash all entries
+  // Rehash all entries from old buckets to new buckets
   for (size_t i = 0; i < table->capacity; i++) {
-    hash_entry_t* entry = table->buckets[i];
-    while (entry) {
-      hash_entry_t* next = entry->next;
+    hash_bucket_t *bucket = &table->buckets[i];
+    for (size_t j = 0; j < bucket->len; j++) {
+      hash_entry_t *entry = &bucket->items[j];
 
       // Calculate new bucket index
       uint32_t hash = hash_string(entry->key, entry->key_len);
       size_t new_index = hash & (new_capacity - 1);
 
-      // Insert into new bucket
-      entry->next = new_buckets[new_index];
-      new_buckets[new_index] = entry;
-
-      entry = next;
+      // Insert into new bucket (grow array if needed)
+      hash_bucket_t *new_bucket = &new_buckets[new_index];
+      if (new_bucket->len >= new_bucket->cap) {
+        size_t new_cap = new_bucket->cap == 0 ? 2 : new_bucket->cap * 2;
+        hash_entry_t *new_items = realloc(new_bucket->items, new_cap * sizeof(hash_entry_t));
+        if (!new_items) {
+          // Cleanup on failure
+          for (size_t k = 0; k < new_capacity; k++) {
+            free(new_buckets[k].items);
+          }
+          free(new_buckets);
+          return -1;
+        }
+        new_bucket->items = new_items;
+        new_bucket->cap = new_cap;
+      }
+      new_bucket->items[new_bucket->len++] = *entry;  // copy entry (key pointer + value)
     }
+    // Free old bucket's items array (keys are now owned by new buckets)
+    free(bucket->items);
   }
 
   free(table->buckets);
