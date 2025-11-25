@@ -57,12 +57,13 @@ int json_value_cmp(json_value_t *a, json_value_t *b) {
   }
 }
 
-static int json_array_resize(json_value_t *val, size_t nsize) {
+static int json_array_resize(json_value_t *val, size_t nsize, mem_pool_t *pool) {
   if (!val || !val->array.items) return -1;
 
-  json_value_t *temp = realloc(val->array.items, nsize * sizeof(json_value_t));
+  json_value_t *temp = pool_alloc(pool, nsize * sizeof(json_value_t));
   if (!temp) return -1;
 
+  memcpy(temp, val->array.items, val->array.len * sizeof(json_value_t));
   val->array.items = temp;
   val->array.cap = nsize;
   return 0;
@@ -97,7 +98,7 @@ void json_value_free(json_value_t *val) {
 }
 
 // Initialize a hash table in-place (for embedded structs)
-int hash_table_init_inplace(hash_table_t *table, size_t initial_size) {
+int hash_table_init_inplace(hash_table_t *table, size_t initial_size, mem_pool_t *pool) {
   if (!table) return -1;
 
   size_t capacity = 16;
@@ -105,10 +106,11 @@ int hash_table_init_inplace(hash_table_t *table, size_t initial_size) {
     capacity <<= 1;
   }
 
-  table->buckets = calloc(capacity, sizeof(hash_bucket_t));
+  table->buckets = pool_alloc(pool, capacity * sizeof(hash_bucket_t));
   if (!table->buckets) {
     return -1;
   }
+  memset(table->buckets, 0, capacity * sizeof(hash_bucket_t));
 
   table->capacity = capacity;
   table->size = 0;
@@ -116,11 +118,20 @@ int hash_table_init_inplace(hash_table_t *table, size_t initial_size) {
 }
 
 // Allocate and initialize a hash table on heap
+// Note: This function is deprecated and not used with memory pools
 hash_table_t *hash_table_init(size_t initial_size) {
   hash_table_t *table = (hash_table_t *)malloc(sizeof(hash_table_t));
   if (!table) return NULL;
 
-  if (hash_table_init_inplace(table, initial_size) != 0) {
+  // Create a temporary pool for this table (not recommended)
+  mem_pool_t *pool = pool_create();
+  if (!pool) {
+    free(table);
+    return NULL;
+  }
+
+  if (hash_table_init_inplace(table, initial_size, pool) != 0) {
+    pool_destroy(pool);
     free(table);
     return NULL;
   }
@@ -157,9 +168,50 @@ void hash_table_free(hash_table_t *table) {
 
 #define HASH_TABLE_LOAD_FACTOR 0.75f
 
-int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json_value_t value) {
+// Resize hash table when load factor exceeded
+static int hash_table_resize(hash_table_t *table, mem_pool_t *pool) {
+  size_t new_capacity = table->capacity * 2;
+  hash_bucket_t *new_buckets = pool_alloc(pool, new_capacity * sizeof(hash_bucket_t));
+  if (!new_buckets) return -1;
+  memset(new_buckets, 0, new_capacity * sizeof(hash_bucket_t));
+
+  // Rehash all entries from old buckets to new buckets
+  for (size_t i = 0; i < table->capacity; i++) {
+    hash_bucket_t *bucket = &table->buckets[i];
+    for (size_t j = 0; j < bucket->len; j++) {
+      hash_entry_t *entry = &bucket->items[j];
+
+      // Calculate new bucket index
+      uint32_t hash = hash_string(entry->key, entry->key_len);
+      size_t new_index = hash & (new_capacity - 1);
+
+      // Insert into new bucket (grow array if needed)
+      hash_bucket_t *new_bucket = &new_buckets[new_index];
+      if (new_bucket->len >= new_bucket->cap) {
+        size_t new_cap = new_bucket->cap == 0 ? 2 : new_bucket->cap * 2;
+        hash_entry_t *new_items = pool_alloc(pool, new_cap * sizeof(hash_entry_t));
+        if (!new_items) {
+          return -1;
+        }
+        if (new_bucket->items) {
+          memcpy(new_items, new_bucket->items, new_bucket->len * sizeof(hash_entry_t));
+        }
+        new_bucket->items = new_items;
+        new_bucket->cap = new_cap;
+      }
+      new_bucket->items[new_bucket->len++] = *entry;  // copy entry (key pointer + value)
+    }
+  }
+
+  table->buckets = new_buckets;
+  table->capacity = new_capacity;
+
+  return 0;
+}
+
+int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json_value_t value, mem_pool_t *pool) {
   if ((float)table->size / table->capacity >= HASH_TABLE_LOAD_FACTOR) {
-    if (hash_table_resize(table) != 0) {
+    if (hash_table_resize(table, pool) != 0) {
       return -1;
     }
   }
@@ -180,14 +232,17 @@ int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json
   // Grow bucket array if needed
   if (bucket->len >= bucket->cap) {
     size_t new_cap = bucket->cap == 0 ? 2 : bucket->cap * 2;
-    hash_entry_t *new_items = realloc(bucket->items, new_cap * sizeof(hash_entry_t));
+    hash_entry_t *new_items = pool_alloc(pool, new_cap * sizeof(hash_entry_t));
     if (!new_items) return -1;
+    if (bucket->items) {
+      memcpy(new_items, bucket->items, bucket->len * sizeof(hash_entry_t));
+    }
     bucket->items = new_items;
     bucket->cap = new_cap;
   }
 
   // Allocate and copy key
-  char *key_copy = malloc(key_len + 1);
+  char *key_copy = pool_alloc(pool, key_len + 1);
   if (!key_copy) return -1;
   memcpy(key_copy, key, key_len);
   key_copy[key_len] = '\0';
@@ -202,6 +257,26 @@ int hash_table_insert(hash_table_t *table, const char *key, size_t key_len, json
   return 0;
 }
 
+// Pooled version (for parser use)
+void json_object_set_pooled(json_value_t *obj, char *key, json_value_t val, mem_pool_t *pool) {
+  if (obj->type != JSON_OBJECT) return;
+
+  size_t key_len = strlen(key);
+
+  // Check if key already exists
+  json_value_t *existing = hash_table_get(&obj->object, key, key_len);
+  if (existing) {
+    // Update existing value
+    json_value_free(existing);
+    *existing = val;
+    return;
+  }
+
+  // Insert into hash table (key is copied, value is copied by value)
+  hash_table_insert(&obj->object, key, key_len, val, pool);
+}
+
+// Public API version (uses malloc)
 void json_object_set(json_value_t *obj, char *key, json_value_t val) {
   if (obj->type != JSON_OBJECT) return;
 
@@ -217,9 +292,14 @@ void json_object_set(json_value_t *obj, char *key, json_value_t val) {
     return;
   }
 
+  // Create a temporary pool for this operation (not ideal, but maintains API)
+  mem_pool_t *temp_pool = pool_create();
+  if (!temp_pool) return;
+
   // Insert into hash table (key is copied, value is copied by value)
-  hash_table_insert(&obj->object, key, key_len, val);
+  hash_table_insert(&obj->object, key, key_len, val, temp_pool);
   free(key);  // hash_table_insert copies the key
+  // Note: We don't destroy the pool as the hash table now owns the allocated memory
 }
 
 json_value_t *hash_table_get(hash_table_t *table, const char *key, size_t key_len) {
@@ -299,13 +379,32 @@ int json_object_has(json_value_t *obj, char *key) {
  * json_object_keys(json_value_t *obj)
  */
 
-void json_array_push(json_value_t *arr, json_value_t val) {
+// Pooled version (for parser use)
+void json_array_push_pooled(json_value_t *arr, json_value_t val, mem_pool_t *pool) {
   if ((float)arr->array.len >= (float)arr->array.cap * 0.75) {
-    arr->array.cap *= 2;
-    arr->array.items = realloc(arr->array.items, arr->array.cap * sizeof(json_value_t));
-    if (!arr->array.items) {
+    size_t new_cap = arr->array.cap * 2;
+    json_value_t *new_items = pool_alloc(pool, new_cap * sizeof(json_value_t));
+    if (!new_items) {
       return;
     }
+    memcpy(new_items, arr->array.items, arr->array.len * sizeof(json_value_t));
+    arr->array.items = new_items;
+    arr->array.cap = new_cap;
+  }
+
+  arr->array.items[arr->array.len++] = val;
+}
+
+// Public API version (uses realloc)
+void json_array_push(json_value_t *arr, json_value_t val) {
+  if ((float)arr->array.len >= (float)arr->array.cap * 0.75) {
+    size_t new_cap = arr->array.cap * 2;
+    json_value_t *new_items = realloc(arr->array.items, new_cap * sizeof(json_value_t));
+    if (!new_items) {
+      return;
+    }
+    arr->array.items = new_items;
+    arr->array.cap = new_cap;
   }
 
   arr->array.items[arr->array.len++] = val;
@@ -318,11 +417,8 @@ int json_array_pop(json_value_t *arr) {
 
   arr->array.len--;
 
-  if (arr->array.len > 0 && arr->array.len < arr->array.cap / 4) {
-    size_t new_cap = arr->array.cap / 2;
-    if (new_cap < ARRAY_MIN_CAP) new_cap = ARRAY_MIN_CAP;
-    json_array_resize(arr, new_cap);
-  }
+  // Note: We don't resize down when using memory pool since
+  // the pool doesn't support deallocation
 
   return 0;
 }
@@ -345,6 +441,24 @@ json_value_t json_value_bool(bool boolean) {
   return val;
 }
 
+// Pooled versions (for parser use)
+json_value_t json_value_array_pooled(size_t size, mem_pool_t *pool) {
+  json_value_t val = json_value_init(JSON_ARRAY);
+  // Ensure minimum capacity of ARRAY_MIN_CAP
+  size_t cap = size < ARRAY_MIN_CAP ? ARRAY_MIN_CAP : size;
+  val.array.items = pool_alloc(pool, sizeof(json_value_t) * cap);
+  val.array.len = 0;
+  val.array.cap = cap;
+  return val;
+}
+
+json_value_t json_value_object_pooled(size_t size, mem_pool_t *pool) {
+  json_value_t val = json_value_init(JSON_OBJECT);
+  hash_table_init_inplace(&val.object, size, pool);
+  return val;
+}
+
+// Public API versions (use malloc/calloc)
 json_value_t json_value_array(size_t size) {
   json_value_t val = json_value_init(JSON_ARRAY);
   // Ensure minimum capacity of ARRAY_MIN_CAP
@@ -354,8 +468,15 @@ json_value_t json_value_array(size_t size) {
   val.array.cap = cap;
   return val;
 }
+
 json_value_t json_value_object(size_t size) {
   json_value_t val = json_value_init(JSON_OBJECT);
-  hash_table_init_inplace(&val.object, size);
+
+  // Create a temporary pool for the hash table (not ideal, but maintains API)
+  mem_pool_t *temp_pool = pool_create();
+  if (!temp_pool) return val;
+
+  hash_table_init_inplace(&val.object, size, temp_pool);
+  // Note: We don't destroy the pool as the hash table now owns the allocated memory
   return val;
 }

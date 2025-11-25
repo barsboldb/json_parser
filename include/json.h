@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "mem_pool.h"
 /**
  * In JSON, values must be one of the following data types:
  * - a string
@@ -80,57 +81,12 @@ static inline uint32_t hash_string(const char *str, size_t len) {
 }
 
 hash_table_t *hash_table_init(size_t);
-int hash_table_init_inplace(hash_table_t *table, size_t initial_size);
+int hash_table_init_inplace(hash_table_t *table, size_t initial_size, mem_pool_t *pool);
 void hash_table_free(hash_table_t *);
 void hash_table_free_entries(hash_table_t *);
-int hash_table_insert(hash_table_t *, const char *, size_t, json_value_t);
+int hash_table_insert(hash_table_t *, const char *, size_t, json_value_t, mem_pool_t *pool);
 int hash_table_delete(hash_table_t *, const char *, size_t);
 json_value_t *hash_table_get(hash_table_t *, const char *, size_t);
-
-// Resize hash table when load factor exceeded
-static int hash_table_resize(hash_table_t *table) {
-  size_t new_capacity = table->capacity * 2;
-  hash_bucket_t *new_buckets = calloc(new_capacity, sizeof(hash_bucket_t));
-  if (!new_buckets) return -1;
-
-  // Rehash all entries from old buckets to new buckets
-  for (size_t i = 0; i < table->capacity; i++) {
-    hash_bucket_t *bucket = &table->buckets[i];
-    for (size_t j = 0; j < bucket->len; j++) {
-      hash_entry_t *entry = &bucket->items[j];
-
-      // Calculate new bucket index
-      uint32_t hash = hash_string(entry->key, entry->key_len);
-      size_t new_index = hash & (new_capacity - 1);
-
-      // Insert into new bucket (grow array if needed)
-      hash_bucket_t *new_bucket = &new_buckets[new_index];
-      if (new_bucket->len >= new_bucket->cap) {
-        size_t new_cap = new_bucket->cap == 0 ? 2 : new_bucket->cap * 2;
-        hash_entry_t *new_items = realloc(new_bucket->items, new_cap * sizeof(hash_entry_t));
-        if (!new_items) {
-          // Cleanup on failure
-          for (size_t k = 0; k < new_capacity; k++) {
-            free(new_buckets[k].items);
-          }
-          free(new_buckets);
-          return -1;
-        }
-        new_bucket->items = new_items;
-        new_bucket->cap = new_cap;
-      }
-      new_bucket->items[new_bucket->len++] = *entry;  // copy entry (key pointer + value)
-    }
-    // Free old bucket's items array (keys are now owned by new buckets)
-    free(bucket->items);
-  }
-
-  free(table->buckets);
-  table->buckets = new_buckets;
-  table->capacity = new_capacity;
-
-  return 0;
-}
 
 // Create new json_value_t
 json_value_t json_value_init(json_type_t);
@@ -147,6 +103,10 @@ json_value_t json_value_string(char *);
 json_value_t json_value_array(size_t);
 json_value_t json_value_object(size_t size);
 
+// Pooled versions (for internal use by parser)
+json_value_t json_value_array_pooled(size_t, mem_pool_t *pool);
+json_value_t json_value_object_pooled(size_t size, mem_pool_t *pool);
+
 int json_array_cmp(json_value_t *a, json_value_t *b);
 
 int json_object_cmp(json_value_t *a, json_value_t *b);
@@ -160,3 +120,7 @@ int json_object_has(json_value_t *, char *);
 // Handle json_value_array push and pop
 void json_array_push(json_value_t *, json_value_t);
 int json_array_pop(json_value_t *);
+
+// Pooled versions (for internal use by parser)
+void json_object_set_pooled(json_value_t *, char *, json_value_t, mem_pool_t *pool);
+void json_array_push_pooled(json_value_t *, json_value_t, mem_pool_t *pool);
