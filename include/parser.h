@@ -1,13 +1,19 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "lexer.h"
 #include "json.h"
+#include "mem_pool.h"
 
 typedef struct {
   lexer_t *lexer;
   token_t current_token;
   bool has_error;
   char error_message[256];
+  mem_pool_t *pool;
+  bool owns_pool;  // whether the parser owns the pool
 } parser_t;
 
 parser_t parser_init(lexer_t *);
@@ -40,3 +46,5 @@ static inline bool match(parser_t *parser, token_type_t type) {
   return false;
 }
 void parser_error(parser_t *, const char *);
+
+#endif
