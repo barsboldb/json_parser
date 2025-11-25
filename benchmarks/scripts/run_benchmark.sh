@@ -121,7 +121,8 @@ gcc -O3 -march=native -flto \
     "$BENCHMARK_DIR/bin/mem_track.o" \
     "$PROJECT_DIR/src/lexer.c" \
     "$PROJECT_DIR/src/parser.c" \
-    "$PROJECT_DIR/src/json.c"
+    "$PROJECT_DIR/src/json.c" \
+    "$PROJECT_DIR/src/mem_pool.c"
 
 echo -e "${GREEN}✓ C benchmark compiled${NC}"
 

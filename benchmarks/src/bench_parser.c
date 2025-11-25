@@ -74,7 +74,8 @@ benchmark_result_t benchmark_file(const char* filepath) {
     parser_t warmup_parser = parser_init(&warmup_lexer);
     warmup_parser.current_token = next_token(&warmup_lexer);
     json_value_t warmup_value = parse(&warmup_parser);
-    json_value_free(&warmup_value);
+    // Don't call json_value_free - parser_free will clean up pool-allocated memory
+    (void)warmup_value; // Suppress unused warning
     lexer_free(&warmup_lexer);
     parser_free(&warmup_parser);
 
@@ -93,7 +94,8 @@ benchmark_result_t benchmark_file(const char* filepath) {
         double end = get_time_us();
         total_time += (end - start);
 
-        json_value_free(&value);
+        // Don't call json_value_free - parser_free will clean up pool-allocated memory
+        (void)value; // Suppress unused warning
         lexer_free(&lexer);
         parser_free(&parser);
     }
