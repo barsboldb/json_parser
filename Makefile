@@ -25,16 +25,19 @@ DIST_DIR = dist
 # Source files for library
 LIB_SOURCES = $(SRC_DIR)/lexer.c \
               $(SRC_DIR)/parser.c \
-              $(SRC_DIR)/json.c
+              $(SRC_DIR)/json.c \
+              $(SRC_DIR)/mem_pool.c
 
 LIB_HEADERS = $(INC_DIR)/lexer.h \
               $(INC_DIR)/parser.h \
-              $(INC_DIR)/json.h
+              $(INC_DIR)/json.h \
+              $(INC_DIR)/mem_pool.h
 
 # Object files
 LIB_OBJECTS = $(BUILD_DIR)/lexer.o \
               $(BUILD_DIR)/parser.o \
-              $(BUILD_DIR)/json.o
+              $(BUILD_DIR)/json.o \
+              $(BUILD_DIR)/mem_pool.o
 
 # Library outputs
 STATIC_LIB = $(LIB_DIR)/lib$(PROJECT_NAME).a
