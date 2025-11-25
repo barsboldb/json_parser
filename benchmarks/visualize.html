@@ -313,6 +313,20 @@
                     <canvas id="fileAllocProgressionChart"></canvas>
                 </div>
             </div>
+            <div class="chart-container">
+                <h2 class="chart-title">RSS Delta (Memory Growth) Over Time</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">Average RSS growth across commits. Shows memory efficiency improvements.</p>
+                <div class="chart-wrapper">
+                    <canvas id="progressionRssDeltaChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Peak RSS Over Time</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">Average peak RSS across commits. Lower is better for memory efficiency.</p>
+                <div class="chart-wrapper">
+                    <canvas id="progressionRssPeakChart"></canvas>
+                </div>
+            </div>
         </div>
 
         <div id="memory" class="tab-content">
@@ -1473,6 +1487,108 @@
 
             // File allocation progression chart (each file as a line across commits)
             renderFileAllocProgressionChart();
+
+            // RSS Delta progression chart
+            let rssDelta;
+            if (selectedFile) {
+                rssDelta = benchmarkData.results.map(r => {
+                    const row = r.memory.find(m => m.file === selectedFile);
+                    return row ? row.rss_delta / (1024 * 1024) : null;
+                }).reverse();
+            } else {
+                rssDelta = benchmarkData.results.map(r => {
+                    const avg = r.memory.reduce((sum, m) => sum + m.rss_delta, 0) / r.memory.length;
+                    return avg / (1024 * 1024);
+                }).reverse();
+            }
+
+            if (charts.progressionRssDelta) charts.progressionRssDelta.destroy();
+            charts.progressionRssDelta = new Chart(document.getElementById('progressionRssDeltaChart'), {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'RSS Growth (MB)',
+                        data: rssDelta,
+                        borderColor: colors.warning,
+                        backgroundColor: colors.warning + '33',
+                        tension: 0.3,
+                        fill: true,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} MB`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Memory Growth (MB)' }
+                        }
+                    }
+                }
+            });
+
+            // Peak RSS progression chart
+            let rssPeak;
+            if (selectedFile) {
+                rssPeak = benchmarkData.results.map(r => {
+                    const row = r.memory.find(m => m.file === selectedFile);
+                    return row ? row.rss_peak / (1024 * 1024) : null;
+                }).reverse();
+            } else {
+                rssPeak = benchmarkData.results.map(r => {
+                    const avg = r.memory.reduce((sum, m) => sum + m.rss_peak, 0) / r.memory.length;
+                    return avg / (1024 * 1024);
+                }).reverse();
+            }
+
+            if (charts.progressionRssPeak) charts.progressionRssPeak.destroy();
+            charts.progressionRssPeak = new Chart(document.getElementById('progressionRssPeakChart'), {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Peak RSS (MB)',
+                        data: rssPeak,
+                        borderColor: colors.danger,
+                        backgroundColor: colors.danger + '33',
+                        tension: 0.3,
+                        fill: true,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} MB`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Peak Memory (MB)' }
+                        }
+                    }
+                }
+            });
         }
 
         function renderFileAllocProgressionChart() {
