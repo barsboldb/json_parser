@@ -12,6 +12,7 @@
 
 // Now include parser headers - their malloc/free will be redirected
 #include "../../include/parser.h"
+#include "../../include/mem_pool.h"
 
 #define ITERATIONS 100
 
@@ -68,8 +69,7 @@ benchmark_result_t benchmark_file(const char* filepath) {
     }
     result.file_size = file_size;
 
-    // Warmup run
-    mem_track_init();
+    // Warmup run (don't track this)
     lexer_t warmup_lexer = lexer_init(json_content);
     parser_t warmup_parser = parser_init(&warmup_lexer);
     warmup_parser.current_token = next_token(&warmup_lexer);
@@ -79,9 +79,12 @@ benchmark_result_t benchmark_file(const char* filepath) {
     lexer_free(&warmup_lexer);
     parser_free(&warmup_parser);
 
+    // Reset tracking to start fresh for this file
+    mem_track_init();
+
     // Benchmark runs
     double total_time = 0.0;
-    mem_track_reset();
+    mem_pool_t* last_pool = NULL;
 
     for (int i = 0; i < ITERATIONS; i++) {
         double start = get_time_us();
@@ -94,13 +97,35 @@ benchmark_result_t benchmark_file(const char* filepath) {
         double end = get_time_us();
         total_time += (end - start);
 
+        // Save pool reference from last iteration
+        if (i == ITERATIONS - 1) {
+            last_pool = parser.pool;
+        }
+
         // Don't call json_value_free - parser_free will clean up pool-allocated memory
         (void)value; // Suppress unused warning
         lexer_free(&lexer);
-        parser_free(&parser);
+
+        // Only free parser on last iteration after getting pool stats
+        if (i < ITERATIONS - 1) {
+            parser_free(&parser);
+        }
     }
 
     result.mem_stats = mem_track_stats();
+
+    // Add pool stats
+    if (last_pool) {
+        result.mem_stats.pool_allocated = pool_bytes_allocated(last_pool);
+        result.mem_stats.pool_used = pool_bytes_used(last_pool);
+    }
+
+    // Now free the last parser
+    // Note: We need to reconstruct parser struct to free it properly
+    // Actually, we saved the pool, so we can free through the pool
+    if (last_pool) {
+        pool_destroy(last_pool);
+    }
     result.parse_time_ms = (total_time / ITERATIONS) / 1000.0;
     result.throughput_mbps = (file_size / (1024.0 * 1024.0)) / (result.parse_time_ms / 1000.0);
 
@@ -135,7 +160,7 @@ int main(int argc, char** argv) {
 
     // Write CSV headers
     fprintf(perf_file, "file,size_bytes,parse_time_ms,throughput_mbps\n");
-    fprintf(mem_file, "file,malloc_count,free_count,realloc_count,calloc_count,total_allocated,total_freed,peak_usage,rss_start,rss_end,rss_delta,rss_peak,leaked\n");
+    fprintf(mem_file, "file,malloc_count,free_count,realloc_count,calloc_count,total_allocated,total_freed,peak_usage,pool_allocated,pool_used,rss_start,rss_end,rss_delta,rss_peak,leaked\n");
 
     printf("JSON Parser Benchmark\n");
     printf("====================\n\n");
@@ -173,8 +198,14 @@ int main(int argc, char** argv) {
                result.mem_stats.calloc_count,
                result.mem_stats.realloc_count,
                result.mem_stats.free_count);
-        printf("  Peak heap: %zu bytes, RSS: %zu → %zu bytes (Δ%+zd, peak %zu)\n",
-               result.mem_stats.peak_usage,
+        printf("  Heap: allocated=%zu, freed=%zu, peak=%zu bytes\n",
+               result.mem_stats.total_allocated,
+               result.mem_stats.total_freed,
+               result.mem_stats.peak_usage);
+        printf("  Pool: allocated=%zu, used=%zu bytes\n",
+               result.mem_stats.pool_allocated,
+               result.mem_stats.pool_used);
+        printf("  RSS: %zu → %zu bytes (Δ%+zd, peak %zu)\n",
                result.mem_stats.rss_start,
                result.mem_stats.rss_end,
                (ssize_t)(result.mem_stats.rss_end - result.mem_stats.rss_start),
@@ -194,7 +225,7 @@ int main(int argc, char** argv) {
                 result.throughput_mbps);
 
         size_t rss_delta = result.mem_stats.rss_end - result.mem_stats.rss_start;
-        fprintf(mem_file, "%s,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu\n",
+        fprintf(mem_file, "%s,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu\n",
                 entry->d_name,
                 result.mem_stats.malloc_count,
                 result.mem_stats.free_count,
@@ -203,6 +234,8 @@ int main(int argc, char** argv) {
                 result.mem_stats.total_allocated,
                 result.mem_stats.total_freed,
                 result.mem_stats.peak_usage,
+                result.mem_stats.pool_allocated,
+                result.mem_stats.pool_used,
                 result.mem_stats.rss_start,
                 result.mem_stats.rss_end,
                 rss_delta,
