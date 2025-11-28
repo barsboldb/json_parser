@@ -17,6 +17,8 @@ typedef struct {
     size_t rss_start;
     size_t rss_end;
     size_t rss_peak;
+    size_t pool_allocated;
+    size_t pool_used;
 } mem_stats_t;
 
 void mem_track_init(void);
@@ -37,12 +39,18 @@ extern size_t mem_calloc_count;
 extern size_t mem_realloc_count;
 extern size_t mem_free_count;
 
-// Macro redirection - increments counter and calls real function
+// Wrapper functions that track sizes
+void* tracked_malloc(size_t size);
+void* tracked_calloc(size_t nmemb, size_t size);
+void* tracked_realloc(void* ptr, size_t size);
+void tracked_free(void* ptr);
+
+// Macro redirection - use wrapper functions
 #ifdef BENCHMARK_MEMORY_TRACKING
-#define malloc(size) (mem_malloc_count++, real_malloc(size))
-#define calloc(nmemb, size) (mem_calloc_count++, real_calloc(nmemb, size))
-#define realloc(ptr, size) (mem_realloc_count++, real_realloc(ptr, size))
-#define free(ptr) (mem_free_count++, real_free(ptr))
+#define malloc(size) tracked_malloc(size)
+#define calloc(nmemb, size) tracked_calloc(nmemb, size)
+#define realloc(ptr, size) tracked_realloc(ptr, size)
+#define free(ptr) tracked_free(ptr)
 #endif
 
 #endif // MEM_TRACK_H

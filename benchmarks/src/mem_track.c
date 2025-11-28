@@ -33,6 +33,8 @@ typedef struct {
     size_t rss_start;
     size_t rss_end;
     size_t rss_peak;
+    size_t pool_allocated;
+    size_t pool_used;
 } mem_stats_t;
 
 // Export counters
@@ -49,6 +51,59 @@ static size_t peak_usage = 0;
 static size_t rss_start = 0;
 static size_t rss_end = 0;
 static size_t rss_peak = 0;
+
+// Allocation size tracking table (simple hash map)
+#define ALLOC_TABLE_SIZE 16384
+typedef struct alloc_entry {
+    void* ptr;
+    size_t size;
+    struct alloc_entry* next;
+} alloc_entry_t;
+
+static alloc_entry_t* alloc_table[ALLOC_TABLE_SIZE] = {0};
+
+static size_t hash_ptr(void* ptr) {
+    return ((uintptr_t)ptr >> 3) % ALLOC_TABLE_SIZE;
+}
+
+static void track_alloc(void* ptr, size_t size) {
+    if (!ptr) return;
+
+    size_t idx = hash_ptr(ptr);
+    alloc_entry_t* entry = real_malloc(sizeof(alloc_entry_t));
+    entry->ptr = ptr;
+    entry->size = size;
+    entry->next = alloc_table[idx];
+    alloc_table[idx] = entry;
+
+    total_allocated += size;
+    current_usage += size;
+    if (current_usage > peak_usage) {
+        peak_usage = current_usage;
+    }
+}
+
+static size_t untrack_alloc(void* ptr) {
+    if (!ptr) return 0;
+
+    size_t idx = hash_ptr(ptr);
+    alloc_entry_t** curr = &alloc_table[idx];
+
+    while (*curr) {
+        if ((*curr)->ptr == ptr) {
+            size_t size = (*curr)->size;
+            alloc_entry_t* to_free = *curr;
+            *curr = (*curr)->next;
+            real_free(to_free);
+
+            total_freed += size;
+            current_usage -= size;
+            return size;
+        }
+        curr = &(*curr)->next;
+    }
+    return 0;
+}
 
 // Get RSS (Resident Set Size) - actual memory used by process
 size_t mem_track_get_rss(void) {
@@ -87,6 +142,17 @@ void mem_track_init(void) {
     rss_start = mem_track_get_rss();
     rss_peak = rss_start;
     rss_end = 0;
+
+    // Clear allocation table
+    for (size_t i = 0; i < ALLOC_TABLE_SIZE; i++) {
+        alloc_entry_t* entry = alloc_table[i];
+        while (entry) {
+            alloc_entry_t* next = entry->next;
+            real_free(entry);
+            entry = next;
+        }
+        alloc_table[i] = NULL;
+    }
 }
 
 void mem_track_reset(void) {
@@ -116,5 +182,36 @@ mem_stats_t mem_track_stats(void) {
     stats.rss_start = rss_start;
     stats.rss_end = rss_end;
     stats.rss_peak = rss_peak;
+    stats.pool_allocated = 0;
+    stats.pool_used = 0;
     return stats;
+}
+
+// Wrapper functions that track sizes
+void* tracked_malloc(size_t size) {
+    mem_malloc_count++;
+    void* ptr = real_malloc(size);
+    track_alloc(ptr, size);
+    return ptr;
+}
+
+void* tracked_calloc(size_t nmemb, size_t size) {
+    mem_calloc_count++;
+    void* ptr = real_calloc(nmemb, size);
+    track_alloc(ptr, nmemb * size);
+    return ptr;
+}
+
+void* tracked_realloc(void* ptr, size_t size) {
+    mem_realloc_count++;
+    untrack_alloc(ptr);
+    void* new_ptr = real_realloc(ptr, size);
+    track_alloc(new_ptr, size);
+    return new_ptr;
+}
+
+void tracked_free(void* ptr) {
+    mem_free_count++;
+    untrack_alloc(ptr);
+    real_free(ptr);
 }
