@@ -1,0 +1,16 @@
+file,size_bytes,parse_time_ms,throughput_mbps
+config.json,723,0.003,251.07
+deeply_nested.json,2911,0.005,537.07
+empty_structures.json,290,0.001,218.55
+geojson.json,39108,0.101,367.62
+github_api.json,853,0.002,366.57
+large.json,13948124,18.583,715.81
+large_array.json,1228284,2.515,465.78
+large_object.json,596091,1.982,286.84
+long_strings.json,1210982,0.515,2241.88
+medium.json,275562,0.620,424.04
+numeric_edges.json,355,0.001,362.42
+package_json.json,670,0.002,338.53
+small.json,263,0.001,284.33
+unicode.json,410,0.001,445.62
+xlarge.json,39707052,114.830,329.77
