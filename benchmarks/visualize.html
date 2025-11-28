@@ -368,9 +368,30 @@
                 </div>
             </div>
             <div class="chart-container">
-                <h2 class="chart-title">C Parser vs Node.js - Memory Comparison</h2>
+                <h2 class="chart-title">Memory Pool Statistics</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">Pool allocated vs actually used. Efficiency = used/allocated ratio.</p>
+                <div class="chart-wrapper">
+                    <canvas id="poolStatsChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Total Memory Breakdown (Heap + Pool)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="totalMemoryBreakdownChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">C Parser vs Node.js - Total Memory Usage</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">C Parser: Peak Heap + Pool Used | Node.js: Total RSS</p>
                 <div class="chart-wrapper">
                     <canvas id="memoryComparisonChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h2 class="chart-title">Memory Efficiency: C vs Node.js</h2>
+                <p style="color: #8b949e; margin-bottom: 15px;">Memory ratio: C Parser Total / Node.js RSS. Lower is better.</p>
+                <div class="chart-wrapper">
+                    <canvas id="memoryEfficiencyRatioChart"></canvas>
                 </div>
             </div>
         </div>
@@ -739,6 +760,15 @@
             const rssPeak = latest.memory.map(row => row.rss_peak);
             const leaks = latest.memory.map(row => row.leaked);
 
+            // Pool data
+            const poolAllocated = latest.memory.map(row => row.pool_allocated || 0);
+            const poolUsed = latest.memory.map(row => row.pool_used || 0);
+
+            // Heap data
+            const totalAllocated = latest.memory.map(row => row.total_allocated || 0);
+            const totalFreed = latest.memory.map(row => row.total_freed || 0);
+            const peakUsage = latest.memory.map(row => row.peak_usage || 0);
+
             // Allocation counts
             const mallocCount = latest.memory.map(row => row.malloc_count || 0);
             const callocCount = latest.memory.map(row => row.calloc_count || 0);
@@ -983,14 +1013,118 @@
                 }
             });
 
-            // Memory Comparison: C Parser vs Node.js
-            // Use actual Node.js heap data from nodejs_memory.csv (matched by filename)
-            const nodeHeapDelta = files.map(file => {
+            // Pool Statistics Chart
+            const poolAllocatedMB = poolAllocated.map(toMB);
+            const poolUsedMB = poolUsed.map(toMB);
+
+            if (charts.poolStats) charts.poolStats.destroy();
+            charts.poolStats = new Chart(document.getElementById('poolStatsChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'Pool Allocated (MB)',
+                            data: poolAllocatedMB,
+                            backgroundColor: colors.primary
+                        },
+                        {
+                            label: 'Pool Used (MB)',
+                            data: poolUsedMB,
+                            backgroundColor: colors.success
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Memory (MB)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const idx = context[0].dataIndex;
+                                    const efficiency = poolUsed[idx] / poolAllocated[idx] * 100;
+                                    return `Efficiency: ${efficiency.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Total Memory Breakdown Chart (Heap + Pool)
+            const peakUsageMB = peakUsage.map(toMB);
+
+            if (charts.totalMemoryBreakdown) charts.totalMemoryBreakdown.destroy();
+            charts.totalMemoryBreakdown = new Chart(document.getElementById('totalMemoryBreakdownChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [
+                        {
+                            label: 'Peak Heap (MB)',
+                            data: peakUsageMB,
+                            backgroundColor: colors.warning,
+                            stack: 'total'
+                        },
+                        {
+                            label: 'Pool Used (MB)',
+                            data: poolUsedMB,
+                            backgroundColor: colors.primary,
+                            stack: 'total'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Memory (MB)'
+                            }
+                        },
+                        x: {
+                            stacked: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                footer: function(context) {
+                                    const idx = context[0].dataIndex;
+                                    const total = (peakUsage[idx] + poolUsed[idx]) / (1024 * 1024);
+                                    return `Total: ${total.toFixed(2)} MB`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Memory Comparison: C Parser vs Node.js (Total Memory)
+            const nodeRSS = files.map(file => {
                 if (!latest.nodeMemory || latest.nodeMemory.length === 0) return 0;
                 const row = latest.nodeMemory.find(m => m.file === file);
-                return row ? row.heap_used_delta : 0;
+                return row ? row.rss : 0;
             });
-            const nodeHeapDeltaMB = nodeHeapDelta.map(toMB);
+            const nodeRSSMB = nodeRSS.map(toMB);
+
+            // C Parser total = peak heap + pool used
+            const cTotalMemory = peakUsage.map((heap, i) => heap + poolUsed[i]);
+            const cTotalMemoryMB = cTotalMemory.map(toMB);
 
             if (charts.memoryComparison) charts.memoryComparison.destroy();
             charts.memoryComparison = new Chart(document.getElementById('memoryComparisonChart'), {
@@ -999,13 +1133,13 @@
                     labels: files,
                     datasets: [
                         {
-                            label: 'C Parser RSS Growth (MB)',
-                            data: rssDeltaMB,
+                            label: 'C Parser Total (Heap + Pool) MB',
+                            data: cTotalMemoryMB,
                             backgroundColor: colors.primary
                         },
                         {
-                            label: 'Node.js Heap Growth (MB)',
-                            data: nodeHeapDeltaMB,
+                            label: 'Node.js RSS (MB)',
+                            data: nodeRSSMB,
                             backgroundColor: colors.nodejs
                         }
                     ]
@@ -1015,9 +1149,74 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
+                            beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Memory Growth (MB)'
+                                text: 'Total Memory (MB)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const idx = context[0].dataIndex;
+                                    const cTotal = cTotalMemoryMB[idx];
+                                    const nodeTotal = nodeRSSMB[idx];
+                                    if (cTotal && nodeTotal) {
+                                        const ratio = (cTotal / nodeTotal * 100).toFixed(1);
+                                        const winner = cTotal < nodeTotal ? 'C wins!' : 'Node wins!';
+                                        return `Ratio: ${ratio}% | ${winner}`;
+                                    }
+                                    return '';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Memory Efficiency Ratio Chart
+            const memoryRatios = cTotalMemory.map((cTotal, i) => {
+                const nodeTotal = nodeRSS[i];
+                return nodeTotal > 0 ? (cTotal / nodeTotal) : null;
+            });
+
+            if (charts.memoryEfficiencyRatio) charts.memoryEfficiencyRatio.destroy();
+            charts.memoryEfficiencyRatio = new Chart(document.getElementById('memoryEfficiencyRatioChart'), {
+                type: 'bar',
+                data: {
+                    labels: files,
+                    datasets: [{
+                        label: 'Memory Ratio (C/Node.js)',
+                        data: memoryRatios,
+                        backgroundColor: memoryRatios.map(r => r < 1 ? colors.success : colors.warning)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ratio (< 1.0 = C uses less memory)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const ratio = context.parsed.y;
+                                    const percentage = (ratio * 100).toFixed(1);
+                                    const interpretation = ratio < 1
+                                        ? `C uses ${(100 - ratio * 100).toFixed(1)}% less memory`
+                                        : `C uses ${((ratio - 1) * 100).toFixed(1)}% more memory`;
+                                    return [`Ratio: ${ratio.toFixed(3)}x`, `(${percentage}%)`, interpretation];
+                                }
                             }
                         }
                     }
